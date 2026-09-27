@@ -1,0 +1,14 @@
+{
+  "name": "ueda-family-musou",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "上田家無双 〜ディスカバリー〜 : three.js製の3D一騎当千アクション",
+  "scripts": {
+    "test": "node test/smoke.mjs",
+    "serve": "npx --yes http-server -p 8080 -c-1 ."
+  },
+  "devDependencies": {
+    "playwright": "^1.56.1"
+  }
+}
