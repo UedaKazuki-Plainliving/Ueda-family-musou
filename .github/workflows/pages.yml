@@ -26,8 +26,6 @@ jobs:
       - name: 公開ファイルをまとめる
         run: mkdir _site && cp index.html musou.html three-bundle.js _site/
       - uses: actions/configure-pages@v5
-        with:
-          enablement: true
       - uses: actions/upload-pages-artifact@v3
         with:
           path: _site
