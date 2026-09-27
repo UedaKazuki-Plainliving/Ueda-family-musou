@@ -74,11 +74,11 @@ button{font:inherit;color:inherit}
 .stats{display:grid;grid-template-columns:auto 1fr;gap:3px 10px;font-size:12px;max-width:340px}
 .stats .sb{height:8px;border-radius:9px;background:rgba(255,255,255,.12);align-self:center;overflow:hidden}
 .stats .sb i{display:block;height:100%;background:linear-gradient(90deg,#ffd23f,#ff7a2a);border-radius:9px}
-#cards{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;max-width:680px}
-.card{width:96px;padding:8px 4px;border-radius:14px;border:2px solid var(--line);background:var(--glass);text-align:center;cursor:pointer;
+#cards{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;max-width:760px}
+.card{width:78px;padding:6px 2px;border-radius:14px;border:2px solid var(--line);background:var(--glass);text-align:center;cursor:pointer;
   transition:transform .12s,border-color .12s}
-.card .em{font-size:34px;line-height:1.1}
-.card .cn{font-size:12px;font-weight:800;margin-top:3px;white-space:nowrap}
+.card .em{font-size:28px;line-height:1.1}
+.card .cn{font-size:11px;font-weight:800;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .card.sel{border-color:var(--gold);transform:translateY(-4px) scale(1.05);box-shadow:0 8px 24px rgba(255,210,63,.3)}
 .rowbtns{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:12px}
 
@@ -580,6 +580,8 @@ const CONE=new THREE.ConeGeometry(1,1,16), CIRC=new THREE.CircleGeometry(1,40), 
 const BAT_GEO=new THREE.CylinderGeometry(.11,.06,1.0,16);
 const HALFTORUS=new THREE.TorusGeometry(1,.07,8,24,Math.PI);
 const SPHS=new Map();
+const CYLS=new Map();
+function geoCyl(k,rt,rb,h){ let g=CYLS.get(k); if(!g){ g=new THREE.CylinderGeometry(rt,rb,h,20,1,true); CYLS.set(k,g); } return g; }
 function geoSph(k,...a){ let g=SPHS.get(k); if(!g){ g=new THREE.SphereGeometry(...a); SPHS.set(k,g); } return g; }
 const CAPS=new Map();
 function geoCap(r,l){ const k=r.toFixed(3)+'_'+l.toFixed(3); let g=CAPS.get(k); if(!g){ g=new THREE.CapsuleGeometry(r,l,6,14); CAPS.set(k,g); } return g; }
@@ -735,7 +737,78 @@ const CHARS=[
   body:{scale:1.0,bulk:1.06,headR:.39,neck:.11,belly:.03},
   pal:{skin:0xf0c19c,hair:0x4a2a1e,top:0xee44aa,bottom:0xff88cc,shoe:0x8e4a63,accent:0xffd166},
   gear:['glasses','apron','bun'] },
+/* ---- バトル版の残り13人（ステータスは 1〜5 の能力値から換算） ---- */
+ST({ key:'kuppa', name:'クッパ', emoji:'🐲', tint:0xcc4411, weapon:'fist', wcol:0xffb040, wname:'トゲの爪',
+  desc:'最重量級。チャージ4「のしかかり」で跳び上がって押し潰す。無双乱舞「ハンマー乱打」で正面を叩き潰せ。',
+  c4:'slam', mfx:'multihit', armor:true, special:'のしかかり', musou:'ハンマー乱打', mcol:0xffb040, trait:'攻撃中アーマー・最重量',
+  body:{scale:1.16,bulk:1.34,headR:.42,neck:.08,belly:.26},
+  pal:{skin:0xe8c85a,hair:0xbb5511,top:0x886622,bottom:0xcc4411,shoe:0x5a3a18,accent:0xffee88}, gear:['horns','shell'] },[4,1,5,3,2]),
+ST({ key:'kinopio', name:'キノピオ', emoji:'🍄', tint:0xff5a5a, weapon:'fist', wcol:0xffffff, wname:'キノコパンチ',
+  desc:'最軽量・最速。チャージ4「キノコ飛ばし」で8連射。無双乱舞「巨大キノコ乱打」で畳みかける。',
+  c4:'shots', c4o:{n:8,spread:.1,col:0xff5a5a,dmg:9,r:.45}, mfx:'multihit', special:'キノコ飛ばし', musou:'巨大キノコ乱打', mcol:0xff5a5a, trait:'最速・キノコ8連射',
+  body:{scale:.7,bulk:.92,headR:.46,neck:.06,belly:.04},
+  pal:{skin:0xffe0c0,hair:0xffffff,top:0xffffff,bottom:0x3355bb,shoe:0xcc8844,accent:0xcc2222}, gear:['mushroom'] },[1,5,1,2,4]),
+ST({ key:'mario', name:'マリオ', emoji:'🔴', tint:0xdd1100, weapon:'fist', wcol:0xffffff, wname:'白い手袋',
+  desc:'バランス型。チャージ4「ファイヤーボール」は跳ねる火の玉5連射。無双乱舞「超ファイヤー」で巨大な火球を連発。',
+  c4:'shots', c4o:{n:5,spread:.16,col:0xff4a10,dmg:12,r:.45,g:22,vy:6,bounce:true}, mfx:'bigshot', special:'ファイヤーボール', musou:'超ファイヤー', mcol:0xff4a10, trait:'扱いやすいバランス型',
+  body:{scale:.94,bulk:1.1,headR:.41,neck:.09,belly:.12},
+  pal:{skin:0xf2c39a,hair:0x3a2416,top:0xdd1100,bottom:0x0055cc,shoe:0x4a2a18,accent:0xffffff}, gear:['cap','mustache','overalls'] },[3,4,3,3,4]),
+ST({ key:'luigi', name:'ルイージ', emoji:'🟢', tint:0x22bb33, weapon:'fist', wcol:0xffffff, wname:'白い手袋',
+  desc:'突進が鋭い。チャージ4「突進」で敵陣を突き抜け、無双乱舞「超高速突進」で戦場を縦横無尽に駆ける。',
+  c4:'rush', mfx:'rush', special:'突進', musou:'超高速突進', mcol:0x3ce07a, trait:'高いジャンプ・突進',
+  body:{scale:.96,bulk:1.04,headR:.41,neck:.1,belly:.08},
+  pal:{skin:0xf2c39a,hair:0x3a2416,top:0x22bb33,bottom:0x1144cc,shoe:0x4a2a18,accent:0xffffff}, gear:['cap','mustache','overalls'] },[2,3,3,3,5]),
+ST({ key:'pikachu', name:'ピカチュウ', emoji:'⚡', tint:0xffcc00, weapon:'fist', wcol:0xfff24a, wname:'でんきのほっぺ',
+  desc:'素早い電撃タイプ。チャージ4「でんき5連射」で遠くの敵も撃ち抜き、無双乱舞「スーパーでんき」は一直線の極太ビーム。',
+  c4:'shots', c4o:{n:5,spread:.08,col:0xffe23a,dmg:11,r:.38,spd:30}, mfx:'beam', special:'でんき5連射', musou:'スーパーでんき', mcol:0xfff24a, trait:'遠距離連射・ビーム',
+  body:{scale:.76,bulk:.98,headR:.46,neck:.06,belly:.08}, cheek:0xff4444,
+  pal:{skin:0xffcc00,hair:0xffcc00,top:0xffcc00,bottom:0xcc8800,shoe:0x3a2a10,accent:0xff4444}, gear:['pikaears','pikatail'] },[2,4,2,3,4]),
+ST({ key:'kirby', name:'カービィ', emoji:'🩷', tint:0xff88bb, weapon:'hammer', wname:'ハンマー',
+  desc:'まん丸の軽量級。ジャンプ長押しでホバリング。チャージ4「すいこみ」で敵を集め、無双乱舞「ハンマー投げ」で吹き飛ばす。',
+  c4:'vortex', c4o:{col:0xffb0d8,col2:0xffffff}, mfx:'hammer', float:true, special:'すいこみ', musou:'ハンマー投げ', mcol:0xff88bb, trait:'ホバリング・3段ジャンプ',
+  body:{scale:.74,bulk:1.22,headR:.5,neck:.04,belly:.2},
+  pal:{skin:0xff88bb,hair:0xff88bb,top:0xff88bb,bottom:0xff88bb,shoe:0xcc2255,accent:0xffd0e4}, gear:['round'] },[2,3,2,2,5]),
+ST({ key:'doraemon', name:'ドラえもん', emoji:'🔵', tint:0x0099ff, weapon:'cannon', wname:'空気砲',
+  desc:'重量級の道具使い。チャージ4「空気砲」6連射は一撃が重い。無双乱舞「ビッグライト」で巨大化して暴れ回る。',
+  c4:'shots', c4o:{n:6,spread:.12,col:0x8fe4ff,dmg:16,r:.7,spd:23}, mfx:'biglight', special:'空気砲', musou:'ビッグライト', mcol:0xffe45a, trait:'無双で巨大化',
+  body:{scale:.9,bulk:1.26,headR:.5,neck:.04,belly:.22,eyeY:.3},
+  pal:{skin:0xffffff,hair:0x0099ff,top:0x0099ff,bottom:0x0099ff,shoe:0xcc0000,accent:0xffd400}, gear:['doraemon'] },[4,1,4,3,2]),
+ST({ key:'jogo', name:'漏瑚', emoji:'🌋', tint:0xcc3300, weapon:'fist', wcol:0xff6a10, wname:'溶岩の拳',
+  desc:'火山の呪霊。チャージ4「ファイヤーボール」は大きな火球4連射。無双乱舞「火山爆発」で前方を次々と噴火させる。',
+  c4:'shots', c4o:{n:4,spread:.2,col:0xff5a10,dmg:16,r:.62,spd:18}, mfx:'erupt', armor:true, special:'ファイヤーボール', musou:'火山爆発', mcol:0xff7a20, trait:'攻撃中アーマー',
+  body:{scale:1.04,bulk:1.14,headR:.44,neck:.07,belly:.1},
+  pal:{skin:0xcc7755,hair:0x5a2a18,top:0xcc3300,bottom:0xff6600,shoe:0x4a2010,accent:0xffaa33}, gear:['jogo'] },[3,2,3,4,3]),
+ST({ key:'gojo', name:'五条悟', emoji:'🫧', tint:0x4488ff, weapon:'fist', wcol:0x6fb8ff, wname:'無下限',
+  desc:'最強の呪術師。チャージ4「蒼」で敵を一点に引き寄せ、無双乱舞・虚式「茈」の極太ビームで消し飛ばす。',
+  c4:'vortex', c4o:{col:0x4aa0ff,col2:0xa0d8ff}, mfx:'beam', special:'術式順転「蒼」', musou:'虚式「茈」', mcol:0xa06aff, trait:'全能力高水準',
+  body:{scale:1.02,bulk:1.02,headR:.4,neck:.12,belly:0},
+  pal:{skin:0xf6d8bc,hair:0xf2f4f8,top:0x1a1c26,bottom:0x23283a,shoe:0x14161e,accent:0x4488ff}, gear:['gojohair','blindfold'] },[3,4,3,4,4]),
+ST({ key:'zenitsu', name:'善逸', emoji:'⚡', tint:0xffcc22, weapon:'katana', wcol:0xfff06a, wname:'日輪刀（雷）',
+  desc:'雷の呼吸。チャージ4「霹靂一閃」で一瞬にして敵陣を斬り抜ける。無双乱舞「火雷神」は雷をまとった超高速突進。',
+  c4:'blink', mfx:'rush', special:'霹靂一閃', musou:'火雷神', mcol:0xfff06a, trait:'最速の居合い',
+  body:{scale:.96,bulk:1.0,headR:.41,neck:.1,belly:0},
+  pal:{skin:0xf6d3ae,hair:0xffd83a,top:0xffcc22,bottom:0xff8800,shoe:0x3a2a14,accent:0xfff0a0}, gear:['zenitsu','haori'] },[2,5,2,3,4]),
+ST({ key:'rengoku', name:'煉獄', emoji:'🔥', tint:0xff5511, weapon:'katana', wcol:0xff7a2a, wname:'日輪刀（炎）',
+  desc:'炎柱。チャージ4「炎虎」で炎の虎を放ち、無双乱舞「奥義 煉獄」で一気に焼き尽くす。正面からの打ち合いに強い。',
+  c4:'summon', c4o:{kind:'tiger'}, mfx:'multihit', special:'炎の呼吸 伍ノ型 炎虎', musou:'奥義 煉獄', mcol:0xffb020, trait:'炎虎召喚',
+  body:{scale:1.04,bulk:1.12,headR:.41,neck:.11,belly:.04},
+  pal:{skin:0xf6d3ae,hair:0xff5511,top:0x1a1a1a,bottom:0xffcc00,shoe:0x2a2018,accent:0xffdd44}, gear:['flamehair','haori'] },[3,3,3,4,3]),
+ST({ key:'tanjiro', name:'竈門炭治郎', emoji:'🟩', tint:0x1a6b3a, weapon:'katana', wcol:0x2a2a30, wname:'日輪刀（黒）',
+  desc:'水と炎を継ぐ剣士。チャージ4「円舞」は周囲を舞うように斬り続ける。無双乱舞「火車」で回転しながら突撃。',
+  c4:'dance', mfx:'rush', special:'円舞', musou:'火車', mcol:0xff6a2a, trait:'癖のない剣士',
+  body:{scale:1.0,bulk:1.06,headR:.41,neck:.11,belly:0},
+  pal:{skin:0xf0c49c,hair:0x2a1410,top:0x1a6b3a,bottom:0x101418,shoe:0x2a2018,accent:0xd94f2a}, gear:['tanjiro'] },[2,4,3,4,4]),
+ST({ key:'akaza', name:'猗窩座', emoji:'👊', tint:0xe05a7a, weapon:'fist', wcol:0x8fd4ff, wname:'破壊殺',
+  desc:'破壊殺の使い手。チャージ4「羅針」で8秒間攻撃力と速さがアップ。無双乱舞「スーパーパンチ」の連打で叩き込む。',
+  c4:'buff', mfx:'multihit', special:'破壊殺・羅針', musou:'スーパーパンチ', mcol:0xe05a7a, trait:'自己強化',
+  body:{scale:1.02,bulk:1.18,headR:.4,neck:.11,belly:0},
+  pal:{skin:0xf2c0a8,hair:0xe05a7a,top:0x3a4a7a,bottom:0x3a4a7a,shoe:0x24304a,accent:0x8fd4ff}, gear:['akaza'] },[3,3,3,3,3]),
 ];
+/* 能力値(1〜5)→無双用ステータス */
+function ST(c,[pw,sp,wt,rg,jp]){
+  return Object.assign({hp:190+wt*30, spd:5.6+sp*.7, pow:.72+pw*.18, range:2.05+rg*.16, aspd:.72+sp*.12, jumps:jp>=5?3:2, jv:8.6+jp*.3,
+    chain:sp>=4?6:pw>=4?4:5},c);
+}
 const CHARMAP=Object.fromEntries(CHARS.map(c=>[c.key,c]));
 const ELEM={
   fire:   {name:'ファイア', col:0xff7a2a, css:'#ff7a2a', icon:'🔥'},
@@ -749,12 +822,14 @@ function heroMesh(c){
   const root=new THREE.Group(), body=new THREE.Group(); root.add(body); body.scale.setScalar(b.scale);
   const R={root,body,c};
   const skin=mat(P.skin,{rough:.55}), hair=mat(P.hair,{rough:.7}), top=mat(P.top), bot=mat(P.bottom), shoe=mat(P.shoe,{rough:.5}), acc=mat(P.accent,{rough:.45});
-  const eyeM=mat(0x16121a,{rough:.15}), white=mat(0xffffff,{emi:0x444444}), cheek=mat(0xff8fa8,{rough:.8,tr:true,op:.75});
+  const eyeM=mat(0x16121a,{rough:.15}), white=mat(0xffffff,{emi:0x444444}), cheek=mat(c.cheek||0xff8fa8,{rough:.8,tr:true,op:c.cheek?1:.75});
   const add=(parent,geo,m,sx,sy,sz,x,y,z,cast=true)=>{ const o=new THREE.Mesh(geo,m); o.scale.set(sx,sy,sz); o.position.set(x,y,z); o.castShadow=cast; parent.add(o); return o; };
   const face=(head,hr,dog)=>{
+    const ey=(b.eyeY||0)*hr, ez=Math.sqrt(Math.max(.1,1-(b.eyeY||0)**2));
+    if(c.gear.includes('blindfold')||c.gear.includes('jogo')) return;
     for(const sx of[-1,1]){
-      add(head,SPH,eyeM,hr*.13,hr*.2,hr*.08,sx*hr*.34,-hr*.02,hr*.9,false);
-      add(head,SPH,white,hr*.05,hr*.05,hr*.05,sx*hr*.34+hr*.03,hr*.07,hr*.97,false);
+      add(head,SPH,eyeM,hr*.13,hr*.2,hr*.08,sx*hr*.34,-hr*.02+ey,hr*.9*ez,false);
+      add(head,SPH,white,hr*.05,hr*.05,hr*.05,sx*hr*.34+hr*.03,hr*.07+ey,hr*.97*ez,false);
       if(!dog) add(head,SPH,cheek,hr*.16,hr*.09,hr*.05,sx*hr*.58,-hr*.3,hr*.76,false);
     }
   };
@@ -793,7 +868,7 @@ function heroMesh(c){
   const hr=b.headR;
   const head=new THREE.Group(); head.position.y=.72+b.neck+hr*.85; torso.add(head); R.head=head;
   add(head,SPH,skin,hr,hr,hr,0,0,0);
-  const HAIRS=['bobboy','longbang','longnofringe','perm'];
+  const HAIRS=['bobboy','longbang','longnofringe','perm','horns','mushroom','cap','pikaears','round','doraemon','jogo','gojohair','zenitsu','flamehair','tanjiro','akaza'];
   if(!c.gear.some(g=>HAIRS.includes(g))) add(head,SPH,hair,hr*1.05,hr*.8,hr*1.03,0,hr*.3,-hr*.16);
   /* バトル版の髪型：頭頂キャップ＋顔の窓を空けた後ろ髪 */
   const capTop=(th,sc)=>{ const m=add(head,geoSph('top'+th,1,24,12,0,TAU,0,Math.PI*th),hair,hr*1.06,hr*1.06*(sc||1),hr*1.06,0,0,0); return m; };
@@ -806,6 +881,41 @@ function heroMesh(c){
   if(c.gear.includes('perm')){ capTop(.3); for(let i=0;i<14;i++){ const a=i/14*TAU, r2=hr*(.78+((i*37)%10)/45);
       if(Math.sin(a)>.55) continue; add(head,SPH_LO,hair,hr*.3,hr*.3,hr*.3,Math.cos(a)*r2,hr*(.5+((i*53)%10)/36),Math.sin(a)*r2*.86); } }
   face(head,hr,false);
+  const has=k=>c.gear.includes(k), T=torso, bk=b.bulk;
+  const spikes=(n,a0,da,col,len,tilt,y,rz,rr)=>{ for(let i=0;i<n;i++){ const a=a0+i*da; const t=add(head,CONE,mat(col,{rough:.7}),hr*.16,hr*len,hr*.16,Math.sin(a)*hr*(rr||.72),hr*y,Math.cos(a)*hr*(rz||.62)); t.rotation.set(tilt,a,0); } };
+  if(has('horns')){ capTop(.38); for(const sx of[-1,1]){ const h=add(head,CONE,mat(0xf2e6c0,{rough:.35}),hr*.22,hr*.7,hr*.22,sx*hr*.78,hr*.72,-hr*.1); h.rotation.z=-sx*.45; } }
+  if(has('shell')){ add(T,SPH,mat(0x2f7d3a,{rough:.5}),.5*bk,.46,.32,0,.36,-.26*bk); for(let i=0;i<5;i++){ const a=i/5*TAU; const sp2=add(T,CONE,mat(0xfff0b0,{rough:.3}),.08,.2,.08,Math.cos(a)*.26,.36+Math.sin(a)*.26,-.58*bk); sp2.rotation.x=-Math.PI/2; } }
+  if(has('mushroom')){ add(head,geoSph('mush',1,26,14,0,TAU,0,Math.PI*.54),mat(0xffffff,{rough:.55}),hr*1.55,hr*1.27,hr*1.55,0,hr*.34,0);
+    for(let i=0;i<5;i++){ const a=-1.1+i*.55; add(head,SPH,mat(0xcc2222,{rough:.5}),hr*.32,hr*.16,hr*.32,Math.sin(a)*hr*1.05,hr*.86,Math.cos(a)*hr*1.05); }
+    add(head,SPH,mat(0xcc2222,{rough:.5}),hr*.42,hr*.2,hr*.42,0,hr*1.3,0); }
+  if(has('cap')){ capTop(.34); add(head,geoSph('capc',1,22,12,0,TAU,0,Math.PI*.46),mat(c.pal.top,{rough:.6}),hr*1.08,hr*1.08,hr*1.08,0,hr*.1,0);
+    const br=add(head,BOX,mat(c.pal.top,{rough:.6}),hr*1.5,hr*.14,hr*.9,0,hr*.52,hr*.72); br.rotation.x=-.1;
+    add(head,SPH,mat(0xffffff),hr*.3,hr*.3,hr*.06,0,hr*.66,hr*.95); add(head,geoSph('side',1,18,8,Math.PI/2+.95,TAU-1.9,Math.PI*.42,Math.PI*.22),hair,hr*1.02,hr*1.02,hr*1.02,0,0,0); }
+  if(has('mustache')){ add(head,BOX,mat(0x2a1810),hr*.62,hr*.16,hr*.16,0,-hr*.22,hr*.9); for(const sx of[-1,1]) add(head,SPH,mat(0x2a1810),hr*.15,hr*.14,hr*.14,sx*hr*.3,-hr*.26,hr*.84); add(head,SPH,skin,hr*.2,hr*.18,hr*.18,0,-hr*.06,hr*.98); }
+  if(has('overalls')){ const om=mat(c.pal.bottom,{rough:.6}); add(T,BOX,om,.44*bk,.34,.08,0,.18,.26*bk);
+    for(const sx of[-1,1]){ add(T,BOX,om,.09,.36,.06,sx*.17,.46,.22*bk); add(T,SPH,mat(0xffd400,{metal:.6,rough:.3}),.045,.045,.02,sx*.15,.3,.31*bk); } }
+  if(has('pikaears')){ for(const sx of[-1,1]){ const e=new THREE.Group(); e.position.set(sx*hr*.52,hr*.72,-hr*.06); e.rotation.z=-sx*.26; head.add(e);
+      add(e,BOX,hair,hr*.26,hr*.86,hr*.16,0,hr*.4,0); add(e,BOX,mat(0x2a2018),hr*.27,hr*.28,hr*.17,0,hr*.92,0); } }
+  if(has('pikatail')){ const zm=hair; [[0,.18,.3,.12],[.16,.44,.34,.14],[-.06,.7,.42,.16]].forEach(([x,y,w,h],i)=>{ const m2=add(body,BOX,zm,w,h,.1,x,.55+y,-.42*bk); m2.rotation.z=(i%2?-1:1)*.5; }); }
+  if(has('doraemon')){ add(head,SPH,mat(0xffffff,{rough:.45}),hr*.8,hr*.72,hr*.4,0,-hr*.14,hr*.66);
+    add(head,SPH,mat(0xd42a2a,{rough:.25}),hr*.16,hr*.16,hr*.16,0,hr*.1,hr*1.02);
+    for(const sx of[-1,1]) for(let i=0;i<3;i++){ const w=add(head,BOX,mat(0x2a2a2a),hr*.44,hr*.035,hr*.035,sx*hr*.52,-hr*.18+i*hr*.12,hr*.98); w.rotation.z=sx*(i-1)*.22; }
+    add(T,TORUS,mat(0xd42a2a,{rough:.4}),.3*bk,.3*bk,.8,0,.66,0).rotation.x=Math.PI/2; add(T,SPH,mat(0xffd400,{metal:.7,rough:.25}),.12,.12,.12,0,.56,.28*bk);
+    add(T,SPH,mat(0xffffff),.28*bk,.26,.08,0,.24,.26*bk); }
+  if(has('jogo')){ const v=add(head,geoCyl('volc',.52,1.12,1.05),mat(0x6b3a24,{rough:.9}),hr,hr,hr,0,hr*.72,0);
+    add(head,CIRC,mat(0xff6a10,{emi:0xff4a00,emiI:2.5}),hr*.5,hr*.5,hr*.5,0,hr*1.24,0).rotation.x=-Math.PI/2;
+    add(head,SPH,white,hr*.26,hr*.3,hr*.12,0,hr*.06,hr*.9,false); add(head,SPH,eyeM,hr*.12,hr*.16,hr*.06,0,hr*.04,hr*1.0,false);
+    R.crater=true; }
+  if(has('gojohair')){ capTop(.5); spikes(7,-.95,.32,c.pal.hair,.66,-.35,.7,.62,.7); }
+  if(has('blindfold')){ add(head,BOX,mat(0x14161e,{rough:.8}),hr*2.12,hr*.42,hr*2.12,0,hr*.04,0); add(head,BOX,mat(0x14161e),hr*.24,hr*.24,hr*.24,0,hr*.08,-hr*.8); }
+  if(has('zenitsu')){ capTop(.54); spikes(6,-.85,.34,c.pal.hair,.58,.55,.62,.66,.72); }
+  if(has('flamehair')){ capTop(.5); for(let i=0;i<9;i++){ const a=-1.15+i*.29; const t=add(head,CONE,mat(i%2?0xffcc00:0xff5511,{rough:.6}),hr*.17,hr*(.85+((i*37)%10)/20),hr*.17,Math.sin(a)*hr*.76,hr*.8,Math.cos(a)*hr*.56); t.rotation.set(-.42,a,0); } }
+  if(has('haori')){ const hm=mat(c.pal.accent,{rough:.7}); for(const sx of[-1,1]){ add(T,BOX,hm,.13*bk,.78,.06,sx*.2*bk,.2,.27*bk); add(T,BOX,hm,.06,.78,.5*bk,sx*.3*bk,.2,0); } add(T,BOX,hm,.62*bk,.82,.06,0,.2,-.29*bk); }
+  if(has('tanjiro')){ capTop(.54); spikes(6,-.85,.34,c.pal.hair,.52,.7,.62,.64,.7);
+    add(head,SPH,mat(0x9a3a1a,{tr:true,op:.8}),hr*.2,hr*.2,hr*.04,-hr*.38,hr*.3,hr*.88,false);
+    for(const sx of[-1,1]) add(head,BOX,mat(0xf2ead6),hr*.22,hr*.34,hr*.05,sx*hr*.94,-hr*.34,hr*.1); }
+  if(has('akaza')){ capTop(.46); add(head,SPH,hair,hr*.34,hr*.34,hr*.34,0,hr*.8,-hr*.34);
+    for(const sx of[-1,1]) for(let i=0;i<3;i++){ const l=add(head,BOX,mat(0x6fb8ff,{emi:0x3a8aff,emiI:1.4}),hr*.3,hr*.05,hr*.05,sx*hr*.56,hr*.18-i*hr*.2,hr*.8,false); l.rotation.z=sx*.4; } }
   for(const g of c.gear){
     if(g==='glasses'){ for(const sx of[-1,1]){ const t=add(head,TORUS,mat(0x222222,{metal:.6,rough:.3}),hr*.2,hr*.2,hr*.2,sx*hr*.34,-hr*.02,hr*.97,false); } }
     if(g==='tie'){ add(torso,BOX,acc,.09,.34,.04,0,.24,.27*b.bulk+.06); }
@@ -838,6 +948,13 @@ function heroMesh(c){
       add(w,CYL,wood,.045,1.4,.045,0,-.6,0); add(w,HALFTORUS,wood,.14,.14,.25,.14,.1,0,false); break;
     case 'baton':
       add(w,CYL,mat(0xd23c5a,{rough:.4}),.05,.5,.05,0,-.3,0); add(w,CYL,mat(0xffffff,{rough:.4}),.052,.12,.052,0,-.3,0,false); break;
+    case 'katana':
+      add(w,CYL,mat(0x1a1a22,{rough:.5}),.035,.34,.035,0,-.12,0); add(w,CYL,mat(0xc8a24a,{metal:.7,rough:.3}),.12,.03,.12,0,-.3,0,false);
+      add(w,BOX,mat(0xe8eef6,{metal:.9,rough:.15,emi:c.wcol,emiI:.35}),.05,1.25,.015,0,-.95,0); break;
+    case 'hammer':
+      add(w,CYL,mat(0x8a5a2b,{rough:.7}),.04,.8,.04,0,-.4,0); { const hd=add(w,CYL,mat(0xc87a3c,{rough:.6}),.26,.56,.26,0,-.9,0); hd.rotation.z=Math.PI/2; } break;
+    case 'cannon':
+      { const cn=add(w,CYL,mat(0x9aa4b0,{metal:.6,rough:.3}),.16,.5,.16,0,-.1,0); cn.rotation.x=Math.PI/2; } break;
     case 'fist': {
       const fm=mat(c.wcol,{emi:c.wcol,emiI:1.6,rough:.3});
       for(const h of [R.handR,R.handL]) add(h,SPH,fm,.14,.14,.14,0,0,0,false);
@@ -1226,7 +1343,7 @@ function breakCrate(c){
 const G={ mode:'boot', char:CHARS[0], selIdx:0, stIdx:0, t:0, ko:0, combo:0, comboT:0, maxCombo:0, stars:0, starsTotal:0, hiyo:0,
   hitStop:0, shake:0, slow:1, slowT:0, over:false, victory:false, endT:0, boss:null, bossPhase:false, roamT:8, msgQ:[], lastBase:null };
 const P={ x:0,y:0,z:0,vx:0,vy:0,vz:0,face:Math.PI,onG:true,state:'move',t:0,mv:null,hp:1,maxHp:1,musou:0,inv:0,jumps:2,
-  elem:null,elemT:0,floatT:0,airAtk:0,bufA:0,bufC:0,walk:0,spdN:0,rig:null,blob:null,aura:0,buff:{big:0,fast:0,star:0},bombT:0,rs:1 };
+  elem:null,elemT:0,floatT:0,airAtk:0,bufA:0,bufC:0,walk:0,spdN:0,rig:null,blob:null,aura:0,buff:{big:0,fast:0,star:0,pow:0},bombT:0,rs:1 };
 let HID=1;
 const MIS={ i:-1, st:null, res:[] };
 let STRUCTS=[];
@@ -1369,6 +1486,13 @@ function cMove(n){
     case 4:
       if(c.c4==='rush') return {kind:'C',idx:4,anim:'thrust',dur:.8/A,cancel:.66/A,armor:true,step:[.08/A,.5/A,21],
         hits:[.14,.24,.34,.46].map((t,j)=>({at:t/A,range:R*.95,arc:180,dmg:13,kb:j===3?12:9,lift:j===3?6:2,fx:true,big:j===3}))};
+      if(c.c4==='slam') return {kind:'C',idx:4,anim:'slam',leap:true,armor:true,dur:1.0/A,cancel:.85/A,step:[.05/A,.4/A,6],
+        hits:[{at:.5/A,range:R*1.9,radial:true,off:1,dmg:32,kb:11,lift:9,ring:true,big:true,shake:.6}]};
+      if(c.c4==='dance') return {kind:'C',idx:4,anim:'spin',dur:1.1/A,cancel:.95/A,
+        hits:[.1,.24,.38,.52,.66,.84].map((t,j)=>({at:t/A,range:R*1.4,radial:true,dmg:9,kb:j===5?10:4,lift:j===5?6:1,fx:true,full:true,big:j===5}))};
+      if(c.c4==='blink') return {kind:'C',idx:4,anim:'thrust',flashCol:'#fff6a0',dur:.62/A,cancel:.5/A,armor:true,step:[.04/A,.28/A,36],
+        hits:[.08,.16,.24,.32].map((t,j)=>({at:t/A,range:R*1.05,arc:220,dmg:14,kb:j===3?12:8,lift:j===3?5:2,fx:true,big:j===3}))};
+      if(c.c4==='buff') return {kind:'C',idx:4,anim:'over',buff:true,dur:.7/A,cancel:.55/A,hits:[{at:.3/A,range:R*1.3,radial:true,dmg:16,kb:9,lift:4,ring:true,big:true}]};
       return {kind:'C',idx:4,anim:'over',dur:.78/A,cancel:.66/A,hits:[{at:.3/A,range:R,arc:150,dmg:16,kb:6,fx:true,big:true}],proj:{at:.3/A,type:c.c4}};
     default: {
       const bigR=(c.bigC5?1.3:1)*R*1.9;
@@ -1406,6 +1530,7 @@ function damageEnemy(e,h,nx,nz){
   if(h.musou) dmg*=1;
   if(e.frozen>0) dmg*=1.25;
   if(P.buff.big>0) dmg*=1.3;
+  if(P.buff.pow>0) dmg*=1.4;
   if(e.st==='broken') dmg*=1.6;
   e.hp-=dmg;
   if(e.type==='boss'&&e.st!=='broken'&&e.hp>0){ e.brk+=dmg; if(e.brk>=e.maxHp*.09) breakBoss(e); }
@@ -1764,12 +1889,16 @@ function spawnProj(type,x,y,z,vx,vy,vz,o){
   let m;
   if(type==='wave'){ m=new THREE.Mesh(WAVE_GEO,basic(o.col||0xffffff,.85,true)); m.rotation.y=Math.atan2(vx,vz)+Math.PI; }
   else if(type==='star'){ m=new THREE.Mesh(STAR_GEO,PROJ_MAT.star); m.scale.setScalar(.8); }
-  else if(type==='tornado'||type==='dust'){ m=new THREE.Group(); for(let k=0;k<3;k++){ const c=new THREE.Mesh(CONE,type==='dust'?basic(k?0xc8b8d8:0x8a7a9a,.55,false):basic(k?0xffb020:0xff5a1f,.45,true)); c.scale.set(1.3-k*.3,3.4,1.3-k*.3); c.rotation.x=Math.PI; c.position.y=1.7; m.add(c); } }
+  else if(type==='tornado'||type==='dust'){ m=new THREE.Group(); for(let k=0;k<3;k++){ const c=new THREE.Mesh(CONE,type==='dust'?basic(k?0xc8b8d8:0x8a7a9a,.55,false):basic(k?(o.col2||0xffb020):(o.col||0xff5a1f),.45,true)); c.scale.set(1.3-k*.3,3.4,1.3-k*.3); c.rotation.x=Math.PI; c.position.y=1.7; m.add(c); } }
   else if(type==='gorilla'){ m=new THREE.Group(); const fur=mat(0x3a2a22,{rough:.9}), face=mat(0x8a6a4a,{rough:.7});
     const add=(g,mt,sx,sy,sz,x,y,z)=>{ const o=new THREE.Mesh(g,mt); o.scale.set(sx,sy,sz); o.position.set(x,y,z); o.castShadow=true; m.add(o); return o; };
     add(SPH,fur,.9,.95,.75,0,1.2,0); add(SPH,fur,.45,.45,.45,0,2.05,.25); add(SPH,face,.3,.26,.2,0,1.98,.6);
     for(const sx of[-1,1]){ add(SPH,fur,.28,.8,.28,sx*.95,1.0,.3); add(SPH,fur,.26,.42,.3,sx*.4,.35,0); add(SPH,mat(0x111111),.05,.05,.04,sx*.14,2.14,.62); } }
-  else if(type==='meteor'||type==='water'||type==='ball'){ m=new THREE.Mesh(SPH_LO,PROJ_MAT[type]); m.scale.setScalar(o.r); }
+  else if(type==='tiger'){ m=new THREE.Group(); const fm=mat(0xff6a1a,{emi:0xff4a00,emiI:1.6}), dk=mat(0x2a1a10);
+    const add=(g,mt,sx2,sy,sz2,x,y,z)=>{ const q=new THREE.Mesh(g,mt); q.scale.set(sx2,sy,sz2); q.position.set(x,y,z); m.add(q); return q; };
+    add(SPH,fm,.7,.6,1.3,0,1,0); add(SPH,fm,.55,.5,.55,0,1.4,1.2); add(CONE,fm,.2,.3,.2,-.3,1.9,1.1); add(CONE,fm,.2,.3,.2,.3,1.9,1.1);
+    for(let k=0;k<4;k++) add(BOX,dk,1.42,.08,.12,0,1.05,-.6+k*.4); for(const [x,z] of [[-.4,.7],[.4,.7],[-.4,-.7],[.4,-.7]]) add(SPH,fm,.2,.5,.2,x,.4,z); }
+  else if(type==='meteor'||type==='water'||type==='ball'){ m=new THREE.Mesh(SPH_LO,o.col&&type==='ball'?mat(o.col,{emi:o.col,emiI:1.8}):PROJ_MAT[type]); m.scale.setScalar(o.r); }
   else { m=new THREE.Mesh(SPH_LO,PROJ_MAT[type]); m.scale.setScalar(o.r); }
   m.position.set(x,y,z); world.add(m);
   const p=Object.assign({type,m,x,y,z,vx,vy,vz,life:1,t:0,hit:new Set(),pierce:false},o); PROJ.push(p); return p;
@@ -1786,16 +1915,19 @@ function updProj(dt){
     if(p.pull) for(const e of EN){ if(e.dead||e.type==='boss') continue; const dx=p.x-e.x, dz=p.z-e.z, d=Math.hypot(dx,dz); if(d<p.r*2.2&&d>.3){ e.x+=dx/d*p.pull*dt; e.z+=dz/d*p.pull*dt; } }
     if(p.type==='dust'){ p.m.rotation.y+=dt*14; if(Math.random()<.5) PART.emit(p.x+rand(-1,1),p.y+rand(0,3),p.z+rand(-1,1),0,1.5,0,.5,.5,0xb8a8c8,0,1); }
     if(p.type==='tornado'){ p.m.rotation.y+=dt*16; for(let k=0;k<2;k++){ const a=rand(0,TAU), h=rand(0,3.4); PART.emit(p.x+Math.cos(a)*(.4+h*.35),p.y+h,p.z+Math.sin(a)*(.4+h*.35),-Math.sin(a)*4,1.5,Math.cos(a)*4,.4,.45,pick([0xff6a20,0xffb020])); } }
+    if(p.g) p.vy-=p.g*dt;
+    if(p.type==='tiger'){ p.m.rotation.y=Math.atan2(p.vx,p.vz); p.m.position.y=p.y+Math.abs(Math.sin(p.t*12))*.5; for(let k=0;k<2;k++) PART.emit(p.x+rand(-.6,.6),p.y+rand(.5,1.8),p.z+rand(-.6,.6),0,3,0,.4,.6,pick([0xff6a1a,0xffb020,0xff3a00])); }
     if(p.type==='gorilla'){ p.m.rotation.y=Math.atan2(p.vx,p.vz); p.m.position.y=p.y+Math.abs(Math.sin(p.t*14))*.3; if(Math.random()<.4) PART.emit(p.x,p.y+.2,p.z,rand(-1,1),1,rand(-1,1),.4,.6,0xd8d0c0); }
     if(p.type==='meteor'&&Math.random()<.8) PART.emit(p.x,p.y+.5,p.z,rand(-.5,.5),2,rand(-.5,.5),.4,.7,pick([0xff6a20,0xffb020,0xff3a00]));
     if(p.type==='water'&&Math.random()<.4) PART.emit(p.x,p.y,p.z,0,0,0,.35,.4,0x8fe4ff);
-    if(p.type==='ball'&&Math.random()<.4) PART.emit(p.x,p.y,p.z,0,0,0,.25,.3,0xbfe8ff);
+    if(p.type==='ball'&&Math.random()<.4) PART.emit(p.x,p.y,p.z,0,0,0,.25,.3,p.col||0xbfe8ff);
     if(p.type==='star'||p.type==='cork') p.m.rotation.y+=dt*12;
     if(p.type==='wave'){ p.m.rotation.y=Math.atan2(p.vx,p.vz)+Math.PI; p.m.material.opacity=Math.min(.85,p.life*1.5); p.m.scale.setScalar((p.big?1.5:1)*(1+p.t*1.2));
       if(Math.random()<.6) PART.emit(p.x+rand(-1,1),p.y,p.z+rand(-1,1),0,1,0,.3,.4,p.col||0xffffff); }
     if(p.type==='orb'&&Math.random()<.3) PART.emit(p.x,p.y,p.z,0,0,0,.3,.4,0xb04dff);
     let dead=p.life<=0;
-    const g=groundAt(p.x,p.z,p.y); if(p.type!=='wave'&&!p.ground&&p.y<g+.1) dead=true;
+    const g=groundAt(p.x,p.z,p.y); if(p.bounce&&p.y<g+p.r&&p.vy<0){ p.y=g+p.r; p.vy=Math.abs(p.vy)*.75; }
+    else if(p.type!=='wave'&&!p.ground&&p.y<g+.1) dead=true;
     if(p.owner==='E'){
       if(!p.boom&&Math.hypot(P.x-p.x,P.z-p.z)<p.r+.45&&p.y>P.y-(p.ground?1:.2)&&p.y<P.y+1.8){ if(hurtPlayer(p.dmg,p.x-p.vx,p.z-p.vz,5)!==false&&!p.persist) dead=true; }
     }else{
@@ -1824,7 +1956,7 @@ function spawnPlayer(){
   if(P.rig){ world.remove(P.rig.root); } if(P.blob) world.remove(P.blob);
   P.rig=heroMesh(c); world.add(P.rig.root); P.blob=blob(.5); world.add(P.blob);
   Object.assign(P,{x:START[0],y:0,z:START[1],vx:0,vy:0,vz:0,face:Math.PI,onG:true,state:'move',t:0,mv:null,hp:c.hp,maxHp:c.hp,musou:0,inv:1,
-    jumps:c.jumps,elem:null,elemT:0,floatT:0,airAtk:0,bufA:0,bufC:0,walk:0,spdN:0,aura:0,buff:{big:0,fast:0,star:0},bombT:0,rs:1});
+    jumps:c.jumps,elem:null,elemT:0,floatT:0,airAtk:0,bufA:0,bufC:0,walk:0,spdN:0,aura:0,buff:{big:0,fast:0,star:0,pow:0},bombT:0,rs:1});
   CAM.yaw=0; CAM.pitch=.36; CAM.tx=P.x; CAM.tz=P.z; CAM.ty=1.4; CAM.dist=CAM.zoomT=CAM.occ=10;
 }
 function startMove(mv){
@@ -1836,6 +1968,9 @@ function startMove(mv){
   if(mv.air){ P.vy=Math.max(P.vy,2.2); P.airAtk++; }
   if(mv.kind==='C'){ const nm=CNAME(G.char)[Math.min(mv.idx,6)-1]; mvPop(`C${mv.idx}  ${nm}`,ELEM_CSS(G.char.tint)); if(mv.idx>=5){ G.slow=.55; G.slowT=.25; } }
   if(mv.kind==='dash') mvPop('ダッシュ攻撃',ELEM_CSS(G.char.tint));
+  if(mv.leap){ P.vy=10; P.onG=false; }
+  if(mv.flashCol) flash(.25,mv.flashCol);
+  if(mv.buff){ P.buff.fast=Math.max(P.buff.fast,8); P.buff.pow=8; PART.burst(P.x,P.y+1,P.z,30,{spd:8,col:[0x8fd4ff,0xffffff],life:.7,size:.5}); }
   AUD.swing();
 }
 function fireHit(h){
@@ -1882,7 +2017,7 @@ function startDodge(mx,mz,mm){
   P.state='dodge'; P.t=0; if(mm>.1) P.face=Math.atan2(mx,mz); P.ddx=Math.sin(P.face); P.ddz=Math.cos(P.face); AUD.dodge();
 }
 function startMusou(){
-  const c=G.char; P.state='musou'; P.t=0; P.pulse=0; P.musouFinal=false; P.musouStart=P.musou;
+  const c=G.char; P.state='musou'; P.t=0; P.pulse=0; P.mfxN=0; P.musouFinal=false; P.musouStart=P.musou;
   AUD.musou(); G.hitStop=.25; G.shake=.4;
   banner(c.musou,'無双乱舞！',ELEM_CSS(c.mcol));
   FX.ring(P.x,P.y+.2,P.z,6,c.mcol,.6);
@@ -1897,7 +2032,7 @@ function updPlayer(dt){
   P.inv=Math.max(0,P.inv-dt);
   if(e.atk) P.bufA=.32; if(e.chg) P.bufC=.32; P.bufA-=dt; P.bufC-=dt;
   if(P.elemT>0){ P.elemT-=dt; if(P.elemT<=0){ P.elem=null; } }
-  for(const k in P.buff) if(P.buff[k]>0){ P.buff[k]-=dt; if(P.buff[k]<=0){ P.buff[k]=0; mvPop({big:'巨大化 おわり',fast:'スピード おわり',star:'無敵 おわり'}[k],'#cccccc'); } }
+  for(const k in P.buff) if(P.buff[k]>0){ P.buff[k]-=dt; if(P.buff[k]<=0){ P.buff[k]=0; mvPop({big:'巨大化 おわり',fast:'スピード おわり',star:'無敵 おわり',pow:'パワーアップ おわり'}[k],'#cccccc'); } }
   if(P.buff.star>0){ const hue=(G.t*2)%1; if(Math.random()<.9) PART.emit(P.x+rand(-.6,.6),P.y+rand(.2,1.8),P.z+rand(-.6,.6),0,2,0,.5,.45,new THREE.Color().setHSL(hue,1,.6).getHex());
     for(const e of EN){ if(e.dead||e.type==='boss') continue; if(Math.abs(e.x-P.x)>2.5||Math.abs(e.z-P.z)>2.5) continue; const d=Math.hypot(e.x-P.x,e.z-P.z);
       if(d<e.r+1.1&&G.t-(e.shT||-9)>.35){ e.shT=G.t; damageEnemy(e,{dmg:24,kb:13,lift:8,big:true},(e.x-P.x)/(d||1),(e.z-P.z)/(d||1)); AUD.hit(true); } } }
@@ -1926,6 +2061,7 @@ function updPlayer(dt){
       if(M.anim==='spin'&&mm>.01){ tvx=mx*c.spd*.55; tvz=mz*c.spd*.55; }
       while(M.hi<M.hits.length&&P.t>=M.hits[M.hi].at){ fireHit(M.hits[M.hi]); M.hi++; }
       if(M.proj&&!M.pd&&P.t>=M.proj.at){ M.pd=true; fireProj(M.proj.type); }
+      if(e.musou&&P.musou>=100){ startMusou(); break; }
       if(P.t>=M.cancel){
         if(e.dodge){ startDodge(mx,mz,mm); break; }
         if(e.musou&&P.musou>=100){ startMusou(); break; }
@@ -2008,9 +2144,11 @@ function updPlayer(dt){
 function fireProj(type){
   const c=G.char, col=P.elem?ELEM[P.elem].col:c.tint;
   const sx=Math.sin(P.face), sz=Math.cos(P.face);
-  if(type==='vortex'){ spawnProj('tornado',P.x+sx*3,P.y,P.z+sz*3,sx*4,0,sz*4,{dmg:6,r:2.2,life:1.6,owner:'P',pierce:true,tick:.18,pull:7,kb:1,lift:2.5,ground:true}); AUD.musou(); }
-  else if(type==='shots'){ [-.14,0,.14].forEach((d,k)=>{ const a=P.face+d; spawnProj('ball',P.x+Math.sin(a)*.8,P.y+1,P.z+Math.cos(a)*.8,Math.sin(a)*24,0,Math.cos(a)*24,{dmg:15,r:.5,life:.9,owner:'P',pierce:true,kb:6,lift:2}); }); AUD.shot(); }
-  else if(type==='gorilla'){ spawnProj('gorilla',P.x+sx*1.5,P.y,P.z+sz*1.5,sx*13,0,sz*13,{dmg:20,r:1.4,life:1.7,owner:'P',pierce:true,kb:10,lift:5,ground:true}); AUD.alarm(); }
+  const o=c.c4o||{};
+  if(type==='vortex'){ spawnProj('tornado',P.x+sx*3,P.y,P.z+sz*3,sx*4,0,sz*4,{dmg:6,r:2.2,life:1.6,owner:'P',pierce:true,tick:.18,pull:7,kb:1,lift:2.5,ground:true,col:o.col,col2:o.col2}); AUD.musou(); }
+  else if(type==='shots'){ const n=o.n||3, spr=o.spread||.14, v=o.spd||24;
+    for(let k=0;k<n;k++){ const a=P.face+(k-(n-1)/2)*spr; spawnProj('ball',P.x+Math.sin(a)*.8,P.y+1,P.z+Math.cos(a)*.8,Math.sin(a)*v,o.vy||0,Math.cos(a)*v,{dmg:o.dmg||15,r:o.r||.5,life:o.bounce?1.6:.9,owner:'P',pierce:true,kb:6,lift:2,col:o.col,g:o.g,bounce:o.bounce}); } AUD.shot(); }
+  else if(type==='gorilla'||type==='summon'){ const kd=o.kind||'gorilla'; spawnProj(kd,P.x+sx*1.5,P.y,P.z+sz*1.5,sx*(kd==='tiger'?17:13),0,sz*(kd==='tiger'?17:13),{dmg:20,r:1.4,life:1.7,owner:'P',pierce:true,kb:10,lift:5,ground:true}); AUD.alarm(); }
   else { spawnProj('wave',P.x+sx*1.2,P.y+.9,P.z+sz*1.2,sx*18,0,sz*18,{dmg:24,r:2.2,life:.8,owner:'P',pierce:true,kb:9,lift:4,col:0x3aa0ff,big:true}); AUD.blast(); }
 }
 /* 無双乱舞中のキャラ別演出（バトル版の超必殺技） */
@@ -2023,6 +2161,18 @@ function musouFx(c){
     case 'water': if(P.mfxN%3===0){ const a=P.face+rand(-1,1); spawnProj('water',P.x+Math.sin(a),P.y+1.4,P.z+Math.cos(a),Math.sin(a)*11,0,Math.cos(a)*11,{dmg:18,r:.8,life:1.6,owner:'P',pierce:true,home:true,kb:8,lift:4}); } break;
     case 'rush': PART.burst(P.x,P.y+.8,P.z,6,{spd:4,col:[0xffd23c,0xfff2a0],life:.5,size:.55}); break;
     case 'blink': FX.arc(P.x,P.y+.9,P.z,P.face+rand(-.6,.6),3.6,0x8fd4ff,{op:.35,life:.14,sweep:rand(-1,1)}); break;
+    case 'multihit': doHit({x:P.x,y:P.y,z:P.z,dir:P.face,range:3.8,arc:150,dmg:7,kb:4,lift:2,musou:true});
+      FX.arc(P.x+Math.sin(P.face),P.y+1,P.z+Math.cos(P.face),P.face+rand(-.4,.4),3,c.mcol,{op:.5,life:.12,sweep:rand(-1,1)}); break;
+    case 'bigshot': if(P.mfxN%4===0){ spawnProj('ball',P.x+Math.sin(P.face),P.y+1.2,P.z+Math.cos(P.face),Math.sin(P.face)*16,0,Math.cos(P.face)*16,{dmg:28,r:1.3,life:1.4,owner:'P',pierce:true,kb:12,lift:6,col:c.mcol}); AUD.blast(); } break;
+    case 'hammer': if(P.mfxN%3===0){ const a=P.face+rand(-.5,.5); spawnProj('ball',P.x,P.y+1.5,P.z,Math.sin(a)*14,8,Math.cos(a)*14,{dmg:24,r:.8,life:2,owner:'P',pierce:true,kb:12,lift:7,col:0xc87a3c,g:20,bounce:true}); } break;
+    case 'beam': if(P.mfxN%6===1){ const fx=Math.sin(P.face), fz=Math.cos(P.face);
+      for(const e of EN){ if(e.dead) continue; const dx=e.x-P.x, dz=e.z-P.z, t=dx*fx+dz*fz, w=Math.abs(dx*fz-dz*fx); if(t>0&&t<24&&w<1.6+e.r) damageEnemy(e,{dmg:26,kb:10,lift:5,big:true},fx,fz); }
+      for(let d=1;d<24;d+=.6) PART.emit(P.x+fx*d+rand(-.3,.3),P.y+1+rand(-.3,.3),P.z+fz*d+rand(-.3,.3),0,0,0,.35,1.1,pick([c.mcol,0xffffff]));
+      flash(.18,ELEM_CSS(c.mcol)); AUD.blast(); G.shake=Math.max(G.shake,.3); } break;
+    case 'erupt': if(P.mfxN%3===0){ const k=((P.mfxN/3)|0)%6, dd=2+k*2.4, x=P.x+Math.sin(P.face)*dd, z=P.z+Math.cos(P.face)*dd, gy=groundAt(x,z,P.y+2);
+      doHit({x,y:gy,z,dir:0,range:2.6,radial:true,dmg:20,kb:6,lift:10,big:true,musou:true}); FX.ring(x,gy+.2,z,2.8,0xff7a20,.4);
+      PART.burst(x,gy+.5,z,20,{spd:10,col:[0xff7a20,0xffb020,0x5a3020],life:.7,size:.6,up:6,grav:10}); AUD.blast(); } break;
+    case 'biglight': if(P.mfxN===1){ P.buff.big=Math.max(P.buff.big,12); mvPop('ビッグライト！ 巨大化','#ffe45a'); } break;
     case 'song': for(let k=0;k<3;k++){ const a=rand(0,TAU), r=rand(1,5.5); PART.emit(P.x+Math.cos(a)*r,P.y+rand(.5,2.5),P.z+Math.sin(a)*r,0,2,0,.8,.5,pick([0xff8ad0,0xffd166,0xffffff])); } break;
   }
 }
@@ -2290,7 +2440,7 @@ function updHud(){
   setT($('#hStar'),'star','⭐ '+G.stars); setT($('#hHiyo'),'hiyo','🐤 '+G.hiyo+'/'+TOWERS.length);
   const el=$('#hElem');
   if(P.elem){ const E=ELEM[P.elem]; el.classList.add('on'); el.style.background=E.css; setT(el,'elem',E.icon+' '+E.name+' '+Math.ceil(P.elemT)+'s'); } else el.classList.remove('on');
-  const bf=[]; if(P.buff.big>0) bf.push('🍄 '+Math.ceil(P.buff.big)); if(P.buff.fast>0) bf.push('👟 '+Math.ceil(P.buff.fast)); if(P.buff.star>0) bf.push('🌟 '+Math.ceil(P.buff.star)); if(P.bombT>0) bf.push('💣');
+  const bf=[]; if(P.buff.big>0) bf.push('🍄 '+Math.ceil(P.buff.big)); if(P.buff.fast>0) bf.push('👟 '+Math.ceil(P.buff.fast)); if(P.buff.star>0) bf.push('🌟 '+Math.ceil(P.buff.star)); if(P.buff.pow>0) bf.push('👊 '+Math.ceil(P.buff.pow)); if(P.bombT>0) bf.push('💣');
   const bs=bf.map(t=>`<span>${t}</span>`).join(''); if(lastHud.bf!==bs){ lastHud.bf=bs; $('#buffs').innerHTML=bs; }
   /* コンボルート表示 */
   const n=P.state==='atk'&&P.mv&&P.mv.kind==='N'?P.mv.idx+1:0, k=Math.min(n,5)+1;
@@ -2372,7 +2522,7 @@ function selChar(i){
   $$('.card').forEach((el,k)=>el.classList.toggle('sel',k===i));
   $('#sName').textContent=c.emoji+' '+c.name; $('#sWeap').textContent='武器：'+c.wname+'　／　C4：'+c.special+'　／　無双乱舞：'+c.musou;
   $('#sDesc').textContent=c.desc+'（特性：'+c.trait+'）';
-  const st=[['体力',c.hp/330],['攻撃',c.pow/1.5],['速さ',c.spd/9],['リーチ',c.range/2.8],['手数',c.chain/6*.5+c.aspd/1.3*.5]];
+  const st=[['体力',c.hp/340],['攻撃',c.pow/1.62],['速さ',c.spd/9.1],['リーチ',c.range/2.85],['手数',c.chain/6*.5+c.aspd/1.32*.5]];
   $('#sStats').innerHTML=st.map(([n,v])=>`<span>${n}</span><div class="sb"><i style="width:${Math.round(v*100)}%"></i></div>`).join('');
   if(G.mode==='select') placePreview(true);
 }

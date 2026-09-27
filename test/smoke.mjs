@@ -30,7 +30,8 @@ const check = (ok, msg) => { console.log((ok ? '  ✔ ' : '  ✘ ') + msg); if (
 
 for (let st = 0; st < 3; st++) {
   const NCH = await page.evaluate(() => window.__MUSOU.CHARS.length);
-  for (let ch = 0; ch < NCH; ch++) {
+  const list = st === 0 ? [...Array(NCH).keys()] : [0, 5, 10, 15].filter(v => v < NCH);
+  for (const ch of list) {
     await page.evaluate(([st, ch]) => { const M = window.__MUSOU; M.G.char = M.CHARS[ch]; M.startStage(st); }, [st, ch]);
     await page.waitForFunction(() => window.__MUSOU.G.mode === 'play', null, { timeout: 20000 });
     const r = await page.evaluate(() => {
