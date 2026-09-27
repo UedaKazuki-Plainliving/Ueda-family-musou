@@ -42,13 +42,33 @@ for (let st = 0; st < 3; st++) {
     });
     check(r.mode === 'play' && r.ko > 0, `stage${st + 1} ${ch}: 戦闘 (撃破 ${r.ko})`);
   }
+  /* ミッション・イベント・パワーアイテムを一通り実行 */
+  const mis = await page.evaluate(() => {
+    const M = window.__MUSOU, seen = [];
+    let guard = 0;
+    while (M.MIS.st && M.MIS.st.type !== 'boss' && guard++ < 10) {
+      const st = M.MIS.st; seen.push(st.type);
+      if (st.type === 'bases') M.BASES.forEach(b => { if (b.owner === 'E') M.captureBase(b); });
+      if (st.type === 'gate') { M.P.x = st.x; M.P.z = st.z + 3; M.P.face = Math.PI; for (let k = 0; k < 60 && st.struct.hp > 0; k++) M.sim(.5, i => { M.P.hp = M.P.maxHp; return i % 12 < 2 ? { KeyJ: 1 } : {}; }); if (st.struct.hp > 0) st.struct.hp = 1, M.sim(.5, i => i < 2 ? { KeyJ: 1 } : {}); }
+      if (st.type === 'defend' || st.type === 'carts' || st.type === 'rush') { for (let k = 0; k < 80 && M.MIS.st === st; k++) M.sim(1, i => { M.P.hp = M.P.maxHp; return i % 12 < 2 ? { KeyJ: 1 } : {}; }); }
+      if (M.MIS.st === st) M.sim(.2);
+      if (M.MIS.st === st) M.misFinish(true);
+    }
+    // イベント4種
+    for (let k = 0; k < 4; k++) { M.G.evT = 0; const keep = M.MIS.st; M.MIS.st = { type: 'bases', n: 99, t: 0 }; M.sim(.1); M.MIS.st = keep; M.sim(2, i => { M.P.hp = M.P.maxHp; return i % 12 < 2 ? { KeyJ: 1 } : {}; }); }
+    // パワーアイテム
+    for (const t of ['kinoko', 'shoes', 'muteki', 'bomb']) { M.addItem(t, M.P.x, M.P.y + .5, M.P.z); M.sim(1.5, i => i % 12 < 2 ? { KeyJ: 1 } : {}); }
+    return { seen: seen.join(','), res: M.MIS.res.map(r => r.name + (r.ok ? '○' : '×')).join(' '), step: M.MIS.st && M.MIS.st.type, mode: M.G.mode };
+  });
+  check(mis.step === 'boss' && mis.mode === 'play', `stage${st + 1}: ミッション進行 ${mis.seen} → ${mis.step}（${mis.res}）`);
   const boss = await page.evaluate(() => {
     const M = window.__MUSOU;
-    M.BASES.forEach(b => { if (b.owner === 'E') M.captureBase(b); });
     M.sim(3);
+    /* ボス固有技を一通り観察 */
+    if (M.G.boss) { const b = M.G.boss; M.P.x = b.x; M.P.z = b.z + 8; for (let k = 0; k < 12; k++) M.sim(1, () => { M.P.hp = M.P.maxHp; return {}; }); b.hp = b.maxHp * .45; M.sim(3, () => { M.P.hp = M.P.maxHp; return {}; }); }
     if (!M.G.boss) return 'no boss';
-    M.G.boss.hp = 5; M.P.x = M.G.boss.x; M.P.z = M.G.boss.z + 3.2; M.P.face = Math.PI; M.P.inv = 5;
-    M.sim(2, i => i % 12 < 2 ? { KeyJ: 1 } : {});
+    M.G.boss.hp = 5;
+    for (let k = 0; k < 12 && !M.G.victory; k++) { const bo = M.G.boss; M.P.x = bo.x; M.P.z = bo.z + bo.r + 1.2; M.P.face = Math.PI; M.P.inv = 5; M.P.state = 'move'; M.sim(.5, i => i % 12 < 2 ? { KeyJ: 1 } : {}); }
     return M.G.victory ? 'ok' : 'boss alive ' + M.G.boss.hp;
   });
   check(boss === 'ok', `stage${st + 1}: 全拠点制圧 → ボス撃破 (${boss})`);

@@ -180,8 +180,29 @@ button{font:inherit;color:inherit}
 #loading .ltx{margin-top:14px;letter-spacing:.2em;color:var(--dim)}
 .spin{width:44px;height:44px;border-radius:50%;border:4px solid rgba(255,255,255,.15);border-top-color:var(--gold);animation:sp 1s linear infinite}
 @keyframes sp{to{transform:rotate(360deg)}}
+#flash{position:absolute;inset:0;pointer-events:none;z-index:11;opacity:0;background:#fff}
+#buffs{display:flex;gap:4px;flex-wrap:wrap;margin-top:5px}
+#buffs span{font-size:11px;font-weight:900;padding:2px 8px;border-radius:9px;background:rgba(0,0,0,.55);border:1px solid rgba(255,255,255,.35);white-space:nowrap}
+#route{position:absolute;left:50%;transform:translateX(-50%);bottom:calc(52px + var(--safe-b));display:flex;gap:10px;align-items:center;padding:5px 14px;border-radius:999px;
+  background:var(--glass);border:1px solid var(--line);font-size:13px;font-weight:900;white-space:nowrap}
+#rPips i{display:inline-block;width:9px;height:9px;border-radius:50%;margin:0 2px;background:rgba(255,255,255,.22)}
+#rPips i.on{background:#ffd23f;box-shadow:0 0 6px #ffd23f}
+#rNext b{color:#ffb35a}
+#mvpop,#kopop{position:absolute;left:50%;transform:translate(-50%,-50%);font-weight:900;font-style:italic;opacity:0;white-space:nowrap;pointer-events:none;
+  -webkit-text-stroke:2px rgba(0,0,0,.45);text-shadow:0 3px 12px rgba(0,0,0,.5)}
+#mvpop{top:66%;font-size:clamp(22px,5.4vw,38px)}
+#kopop{top:34%;font-size:clamp(18px,4.2vw,28px);color:#ffd23f}
+#mvpop.on,#kopop.on{animation:mvp 1s ease-out both}
+@keyframes mvp{0%{opacity:0;transform:translate(-50%,-50%) scale(1.8)}14%{opacity:1;transform:translate(-50%,-50%) scale(1)}75%{opacity:1}100%{opacity:0;transform:translate(-50%,-80%)}}
+.topbar .bk{height:5px;border-radius:4px;background:rgba(0,0,0,.5);margin-top:3px;overflow:hidden}
+.topbar .bk i{display:block;height:100%;background:linear-gradient(90deg,#8ff0ff,#3aa0ff);transition:width .15s}
+#hud.fever::after{content:'';position:absolute;inset:0;border:5px solid #ffd23f;box-shadow:inset 0 0 40px rgba(255,120,200,.45);animation:fev .5s linear infinite;pointer-events:none}
+@keyframes fev{0%{border-color:#ff4d6d}25%{border-color:#ffd23f}50%{border-color:#5be08a}75%{border-color:#3aa0ff}100%{border-color:#ff4d6d}}
+#pauseMoves{margin-top:10px;font-size:12.5px;line-height:1.7;text-align:left;max-width:460px}
+#pauseMoves b{color:#ffd23f}
 #err{position:absolute;left:0;right:0;bottom:0;background:#7f1d1d;color:#fff;font-size:12px;padding:8px;z-index:99;display:none;white-space:pre-wrap}
 @media (max-width:700px){
+  #route{bottom:calc(52px + var(--safe-b));font-size:11px;padding:4px 10px} #rPips i{width:7px;height:7px}
   #mini{width:96px;height:96px;top:calc(108px + var(--safe-t))}
   #combo{top:calc(212px + var(--safe-t))} #combo b{font-size:34px}
   #bossbar{top:calc(116px + var(--safe-t));left:calc(12px + env(safe-area-inset-left,0px));transform:none;width:calc(100vw - 136px)}
@@ -207,6 +228,7 @@ button{font:inherit;color:inherit}
         <div class="bar hp" id="hHpBox"><i id="hHp" style="width:100%"></i><b id="hHpT"></b></div>
         <div class="bar mu" id="hMuBox"><i id="hMu" style="width:0%"></i><span>無双</span></div>
         <div class="elem" id="hElem"></div>
+        <div id="buffs"></div>
       </div>
     </div>
     <div id="obj"></div>
@@ -217,10 +239,13 @@ button{font:inherit;color:inherit}
     </div>
     <canvas id="mini" width="264" height="264"></canvas>
     <div id="combo"><b id="hCombo">0</b><span>HIT!</span></div>
-    <div class="topbar" id="bossbar"><div class="bn" id="bossName"></div><div class="bb"><i id="bossHp" style="width:100%"></i></div></div>
+    <div class="topbar" id="bossbar"><div class="bn" id="bossName"></div><div class="bb"><i id="bossHp" style="width:100%"></i></div><div class="bk"><i id="bossBrk" style="width:0%"></i></div></div>
     <div class="topbar" id="basebar"><div class="bn" id="baseName"></div><div class="bb"><i id="baseG" style="width:100%"></i></div></div>
     <div id="banner"></div>
+    <div id="route"><span id="rPips"></span><span id="rNext"></span></div>
+    <div id="mvpop"></div><div id="kopop"></div>
   </div>
+  <div id="flash"></div>
 
   <!-- タッチ操作 -->
   <div id="touch">
@@ -258,12 +283,15 @@ button{font:inherit;color:inherit}
     <div class="h2">あそびかた</div>
     <div class="panel howto">
       <p>庭もモールもお城も、ヨゴレ軍団に占領された！ 敵の<b style="color:#ff4d6d">拠点</b>で雑兵を倒すと<b>拠点兵長</b>が出現。兵長を倒せば拠点を制圧。すべて制圧すると本陣に<b>ボス</b>が現れる。</p>
-      <p>高いところには迷子の<b>ひよこ🐤</b>と<b>スター⭐</b>が隠れている。ジャンプで探検して救出しよう！ 兵長を倒すと落とす<b>コピー玉</b>で、しばらく攻撃に属性が付く。</p>
+      <p>ステージごとに<b>ミッション</b>が進む（防衛戦・補給部隊の追撃・城門破壊・撃破チャレンジ…）。戦闘中は<b>金ホコリン</b>・<b>フィーバー</b>・<b>伏兵</b>・<b>巨大兵長</b>などのイベントも発生！</p>
+      <p>高いところには迷子の<b>ひよこ🐤</b>と<b>スター⭐</b>。木箱やイベントから <b>🍄巨大化</b>・<b>👟スピード</b>・<b>🌟無敵</b>・<b>💣爆弾</b> が出る。兵長の<b>コピー玉</b>で攻撃に属性が付く。</p>
+      <p>ボスは攻撃を当て続けると<b>ブレイク</b>（青いゲージ）して大ダメージのチャンス。体力が半分になると本気を出す！</p>
       <table>
         <tr><td>移動</td><td>WASD / 左スティック / 画面左をドラッグ</td></tr>
         <tr><td>カメラ</td><td>マウスドラッグ・Q/E / 右スティック / 画面右をドラッグ（R でリセット）</td></tr>
         <tr><td>通常攻撃</td><td>J / □(X) / 攻 … 連打で最大6段コンボ</td></tr>
-        <tr><td>チャージ攻撃</td><td>K / △(Y) / チャージ … 通常攻撃の段数で技が変化（C1〜C6）</td></tr>
+        <tr><td>チャージ攻撃</td><td>K / △(Y) / チャージ … 通常攻撃を n 回当ててから押すと C(n+1) が出る。画面下の「●●○ → △ C3」表示が次に出る技</td></tr>
+        <tr><td>ダッシュ攻撃</td><td>回避中に攻撃 … 走り抜けながらなぎ払う</td></tr>
         <tr><td>ジャンプ</td><td>Space / ×(A) … 多段ジャンプ、空中攻撃、空中チャージで急降下</td></tr>
         <tr><td>回避</td><td>Shift / ○(B) … 無敵ダッシュ。攻撃中もキャンセル可</td></tr>
         <tr><td>無双乱舞</td><td>L / LB・RB / 無双 … ゲージ満タンで無敵の大技</td></tr>
@@ -313,6 +341,7 @@ button{font:inherit;color:inherit}
     <button class="mbtn" data-act="tosel">キャラ選択へ</button>
     <button class="mbtn" data-act="totitle">タイトルへ</button>
     <div class="sub" style="margin-top:10px" id="pauseInfo"></div>
+    <div class="panel" id="pauseMoves"></div>
   </div>
 
   <!-- リザルト -->
@@ -823,6 +852,14 @@ function enemyMesh(type,col,bossCfg){
   const root=new THREE.Group(), body=new THREE.Group(); root.add(body); const R={root,body};
   const white=mat(0xffffff,{rough:.3}), black=mat(0x111111,{rough:.2});
   const add=(p,g,m,sx,sy,sz,x,y,z,cast=false)=>{ const o=new THREE.Mesh(g,m); o.scale.set(sx,sy,sz); o.position.set(x,y,z); o.castShadow=cast; p.add(o); return o; };
+  if(type==='cart'){
+    add(body,BOX,mat(0x8a5a2b,{rough:.8}),1.8,.7,2.4,0,.75,0,true);
+    add(body,BOX,mat(0x5a3a1a,{rough:.8}),1.9,.12,2.5,0,1.12,0);
+    for(let k=0;k<4;k++) add(body,SPH,mat(pick([0xd8c8a0,0xc8a878,0xe8d8b0]),{rough:.9}),.45,.38,.45,rand(-.45,.45),1.45,rand(-.8,.8));
+    add(body,CYL,mat(0xffd23f,{metal:.6,rough:.3}),.08,1.2,.08,.7,1.8,-.9); add(body,BOX,mat(0xff4d6d),.02,.4,.6,.7,2.2,-1.2);
+    R.wheels=[]; for(const [x,z] of [[-.95,.8],[.95,.8],[-.95,-.8],[.95,-.8]]){ const w=add(body,CYL,mat(0x2a2020,{rough:.6}),.42,.18,.42,x,.42,z); w.rotation.z=Math.PI/2; R.wheels.push(w); }
+    return R;
+  }
   if(type==='archer'){
     const cols=[0xff5a5a,0xffcf3a,0x3aa0ff,0x5be08a];
     add(body,BOX,mat(pick(cols),{rough:.5}),.8,.62,.7,0,.36,0,Q.parts>.9);
@@ -834,9 +871,9 @@ function enemyMesh(type,col,bossCfg){
     return R;
   }
   const sc=type==='captain'?1.35:type==='boss'?3.1:1;
-  const cm=type==='grunt'?mat(col,{flat:true,rough:.9}):new THREE.MeshStandardMaterial({color:col,roughness:.85,flatShading:true});
+  const cm=type==='grunt'?mat(col,{flat:true,rough:.9}):type==='goblin'?new THREE.MeshStandardMaterial({color:0xffd23f,roughness:.25,metalness:.8,flatShading:true,emissive:0x664400}):new THREE.MeshStandardMaterial({color:col,roughness:.85,flatShading:true});
   R.core=add(body,ICO,cm,.56,.52,.56,0,.64,0,type!=='grunt'||Q.parts>.9);
-  if(type!=='grunt') R.cmat=cm;
+  if(type!=='grunt'&&type!=='goblin') R.cmat=cm;
   for(const sx of[-1,1]){
     add(body,SPH,white,.14,.16,.1,sx*.18,.74,.44);
     add(body,SPH,type==='boss'?mat(0xff2d2d,{emi:0xff0000,emiI:2.5}):black,.07,.09,.05,sx*.18,.72,.53);
@@ -868,26 +905,29 @@ function enemyMesh(type,col,bossCfg){
 const ISL=74, STEP=.5;
 const STAGES=[
 { key:'garden', name:'はじまりの庭', sub:'STAGE 1', grad:'linear-gradient(135deg,#5fb8ff,#7fd06a)',
-  desc:'上田家の庭にヨゴレ軍団が侵攻！ 花だんや物干し台を取り返して、ホコリン大将を追い払え。',
+  desc:'上田家の庭にヨゴレ軍団が侵攻！ 拠点を取り返しつつ、狙われた洗濯物を守り抜け。ボスは分裂するホコリン大将。',
   sky:[0x4aa8ff,0xd8f2ff,0x9fd8ff], fog:0xd8f2ff, fogD:[70,260], ground:'#7fd06a', ground2:'#69bb57', cliff:0x9b7b56, sea:0x3fb0ff,
   sunC:0xfff1d6, sunI:2.5, hemi:[0xdff3ff,0x6a8f4a,.85], eCol:0x9aa0ad, eMax:44, limit:900, bgm:'garden', kind:'garden',
   bases:[['花だん砦',-36,18],['物干し台',36,18],['犬小屋前',-32,-22],['池のほとり',32,-22]],
   towers:[[-58,-2],[57,-4],[-14,36]],
-  boss:{name:'ホコリン大将',hp:1800,col:0x8e93a3,crown:0xffd23f,cape:0xc0392b} },
+  mission:[{type:'bases',n:2},{type:'defend',name:'上田家の洗濯物',x:-36,z:42,dur:45},{type:'bases',n:'all'},{type:'boss'}],
+  boss:{kind:'hokori',name:'ホコリン大将',hp:1800,col:0x8e93a3,crown:0xffd23f,cape:0xc0392b} },
 { key:'mall', name:'ほこりの廃モール', sub:'STAGE 2', grad:'linear-gradient(135deg,#ff9a6b,#8a6bd8)',
-  desc:'夕暮れのショッピングモール跡。屋上や看板の上にひよこが迷い込んでいる。5つの拠点を奪還せよ。',
+  desc:'夕暮れのモール跡。逃げる補給部隊の荷車を追撃して壊せ！ ボスは何でも吸い込むソウジキ魔人。',
   sky:[0x5a4ab8,0xffc89a,0xff9a6b], fog:0xf6b894, fogD:[60,230], ground:'#c9b79c', ground2:'#b3a084', cliff:0x6b6f7a, sea:0x3a7fbf,
   sunC:0xffc49a, sunI:2.3, hemi:[0xffe0c8,0x5a4a6a,.8], eCol:0xb49a7a, eMax:56, limit:900, bgm:'mall', kind:'mall',
   bases:[['フードコート',-38,16],['ゲームセンター',38,16],['噴水広場',0,4],['屋上駐車場',-30,-26],['エスカレーター',30,-26]],
   towers:[[-58,-8],[58,-8],[16,38]],
-  boss:{name:'ソウジキ魔人',hp:2600,col:0x6a5acd,crown:0x00e0ff,cape:0x2b2d42} },
+  mission:[{type:'bases',n:2},{type:'carts',n:4},{type:'bases',n:'all'},{type:'boss'}],
+  boss:{kind:'vacuum',name:'ソウジキ魔人',hp:2600,col:0x6a5acd,crown:0x00e0ff,cape:0x2b2d42} },
 { key:'castle', name:'ヨゴレ城', sub:'STAGE 3', grad:'linear-gradient(135deg,#2a1b5a,#ff5a3c)',
-  desc:'ヨゴレ軍団の本拠地。溶岩の池に注意しながら城内の拠点を落とし、ヨゴレキングを討て！',
+  desc:'ヨゴレ軍団の本拠地。城門を打ち破り、制限時間内の撃破チャレンジを越えて、隕石と衝撃波を操るヨゴレキングを討て！',
   sky:[0x120c2e,0x6a3a7a,0xff6a3c], fog:0x3a2450, fogD:[50,210], ground:'#6a6480', ground2:'#57516b', cliff:0x3a3448, sea:0xff5a1f,
   sunC:0xd8c8ff, sunI:1.9, hemi:[0x9a8ad8,0x3a2020,.75], eCol:0x8e6bb8, eMax:66, limit:900, bgm:'castle', kind:'castle',
   bases:[['城門',-38,18],['見張り塔',38,18],['大広間',0,4],['宝物庫',-30,-26],['地下牢',30,-26]],
   towers:[[-56,8],[56,8],[-12,38]],
-  boss:{name:'ヨゴレキング',hp:3600,col:0x4b2b6a,crown:0xff4d6d,cape:0x1a0a2a} },
+  mission:[{type:'gate',x:0,z:-30,hp:700},{type:'bases',n:'all'},{type:'rush',n:70,dur:60},{type:'boss'}],
+  boss:{kind:'king',name:'ヨゴレキング',hp:3600,col:0x4b2b6a,crown:0xff4d6d,cape:0x1a0a2a} },
 ];
 const START=[0,58], HQ=[0,-50];
 
@@ -1005,7 +1045,7 @@ function buildStage(i){
 }
 
 function makeBase(name,x,z){
-  const b={name,x,z,r:7,owner:'E',gauge:DIFF[CFG.diff].gauge,gmax:DIFF[CFG.diff].gauge,cap:9,spawnT:rand(0,2),captain:null,capSpawned:false};
+  const b={name,x,z,r:7,owner:'E',gauge:DIFF[CFG.diff].gauge,gmax:DIFF[CFG.diff].gauge,cap:12,spawnT:rand(0,2),captain:null,capSpawned:false};
   const g=new THREE.Group(); g.position.set(x,0,z); world.add(g); b.g=g;
   b.ringM=own(basic(0xff4d6d,.55)); b.discM=own(basic(0xff4d6d,.1));
   const ring=new THREE.Mesh(FX_RING_GEO,b.ringM); ring.rotation.x=-Math.PI/2; ring.position.y=.05; ring.scale.setScalar(b.r); g.add(ring);
@@ -1145,6 +1185,11 @@ function itemMesh(type){
     case 'jar': add(CYL,mat(0xffd23f,{emi:0x663300,emiI:.3,metal:.3,rough:.3}),.18,.42,.18,0,0,0); add(CYL,mat(0xff4d6d),.1,.1,.1,0,.26,0); break;
     case 'orb': { const e=ELEM[g.userData.elem=pick(Object.keys(ELEM))]; add(SPH,mat(e.col,{emi:e.col,emiI:1.8,rough:.2}),.32,.32,.32,0,0,0);
       const r=add(TORUS,mat(0xffffff,{emi:0xffffff,emiI:1}),.5,.5,.5,0,0,0); g.userData.ring=r; break; }
+    case 'kinoko': add(SPH,mat(0xff3a3a,{rough:.5}),.42,.3,.42,0,.18,0); add(CYL,mat(0xfff4e0),.18,.3,.18,0,-.1,0);
+      for(let k=0;k<5;k++){ const a=k/5*TAU; add(SPH,mat(0xffffff),.09,.06,.09,Math.cos(a)*.3,.33,Math.sin(a)*.3); } break;
+    case 'shoes': for(const sx of[-1,1]){ add(BOX,mat(0x39c5ff,{rough:.4}),.18,.14,.36,sx*.14,0,0); add(CONE,mat(0xffffff,{emi:0xffffff,emiI:.5}),.08,.25,.04,sx*.26,.12,-.08).rotation.z=sx*1.2; } break;
+    case 'muteki': { const s2=new THREE.Mesh(STAR_GEO,new THREE.MeshStandardMaterial({color:0xffffff,emissive:0xff66cc,emissiveIntensity:1.6,metalness:.3,roughness:.2})); s2.scale.setScalar(1.3); g.add(s2); g.userData.rainbow=s2.material; break; }
+    case 'bomb': add(SPH,mat(0x1a1a22,{rough:.3,metal:.4}),.34,.34,.34,0,0,0); add(CYL,mat(0x8a7a5a),.05,.18,.05,0,.38,0); add(SPH,mat(0xffb020,{emi:0xff8a00,emiI:2}),.07,.07,.07,0,.5,0); break;
     case 'hiyoko': {
       const y=mat(0xffe24a,{rough:.6});
       add(SPH,y,.38,.34,.4,0,.34,0); add(SPH,y,.26,.26,.26,0,.78,.1);
@@ -1174,15 +1219,20 @@ function breakCrate(c){
   PART.burst(c.x,c.y+.6,c.z,16,{spd:6,col:[0xc8955a,0xe8d2a0],life:.6,size:.35,grav:14});
   AUD.brk();
   const r=Math.random();
-  addItem(r<.42?'onigiri':r<.62?'niku':r<.84?'jar':'star',c.x,c.y+.6,c.z);
+  addItem(r<.34?'onigiri':r<.48?'niku':r<.62?'jar':r<.7?'star':r<.78?'kinoko':r<.86?'shoes':r<.93?'bomb':'muteki',c.x,c.y+.6,c.z);
 }
 
 /* ------------------------------------------------------------ ゲーム状態 */
 const G={ mode:'boot', char:CHARS[0], selIdx:0, stIdx:0, t:0, ko:0, combo:0, comboT:0, maxCombo:0, stars:0, starsTotal:0, hiyo:0,
   hitStop:0, shake:0, slow:1, slowT:0, over:false, victory:false, endT:0, boss:null, bossPhase:false, roamT:8, msgQ:[], lastBase:null };
 const P={ x:0,y:0,z:0,vx:0,vy:0,vz:0,face:Math.PI,onG:true,state:'move',t:0,mv:null,hp:1,maxHp:1,musou:0,inv:0,jumps:2,
-  elem:null,elemT:0,floatT:0,airAtk:0,bufA:0,bufC:0,walk:0,spdN:0,rig:null,blob:null,aura:0 };
+  elem:null,elemT:0,floatT:0,airAtk:0,bufA:0,bufC:0,walk:0,spdN:0,rig:null,blob:null,aura:0,buff:{big:0,fast:0,star:0},bombT:0,rs:1 };
 let HID=1;
+const MIS={ i:-1, st:null, res:[] };
+let STRUCTS=[];
+const POWER=['kinoko','shoes','muteki','bomb'];
+const aspd=()=>G.char.aspd*(P.buff&&P.buff.fast>0?1.3:1);
+const CNAME=c=>['打ち上げ','突進連撃','回転斬り',c.special,'大地割り','大地割り・極'];
 
 /* ------------------------------------------------------------ 入力 */
 const IN={ k:{}, s:{x:0,y:0,cx:0,cy:0,atk:0,chg:0,jump:0,dodge:0,musou:0}, p:{}, e:{}, t:{x:0,y:0,atk:0,chg:0,jump:0,dodge:0,musou:0}, drag:{x:0,y:0}, zoom:0, pad:{} };
@@ -1274,8 +1324,8 @@ function updateCamera(dt,rdt){
       const moving=Math.hypot(P.vx,P.vz)>2&&P.state==='move';
       if(CAM.idle>1.1&&moving){ const want=P.face+Math.PI, d=angDiff(CAM.yaw,want); if(Math.abs(d)<2.3) CAM.yaw+=d*Math.min(1,rdt*1.1); }
     }
-    const td=P.state==='musou'?CAM.zoomT*.8:CAM.zoomT; CAM.dist=damp(CAM.dist,td,4,rdt);
-    CAM.tx=damp(CAM.tx,P.x,12,rdt); CAM.tz=damp(CAM.tz,P.z,12,rdt); CAM.ty=damp(CAM.ty,P.y+1.4,6,rdt);
+    const td=(P.state==='musou'?CAM.zoomT*.8:CAM.zoomT)*(P.buff.big>0?1.45:1); CAM.dist=damp(CAM.dist,td,4,rdt);
+    CAM.tx=damp(CAM.tx,P.x,12,rdt); CAM.tz=damp(CAM.tz,P.z,12,rdt); CAM.ty=damp(CAM.ty,P.y+1.4*(P.rs||1),6,rdt);
     const cp=Math.cos(CAM.pitch), ux=Math.sin(CAM.yaw)*cp, uy=Math.sin(CAM.pitch), uz=Math.cos(CAM.yaw)*cp;
     /* 遮蔽物があればカメラを寄せる */
     let lim=CAM.dist;
@@ -1301,17 +1351,17 @@ function updateCamera(dt,rdt){
 
 /* ------------------------------------------------------------ 技データ */
 function nMove(i){
-  const c=G.char, A=c.aspd, last=i===c.chain-1;
+  const c=G.char, A=aspd(), last=i===c.chain-1;
   const anims=['swingR','swingL','thrust1','swingR','over','spinS'];
   return { kind:'N', idx:i, anim:last?'over':anims[i%5], dur:(last?.56:.42)/A, cancel:(last?.4:.25)/A, step:[.02/A,.14/A,last?6:4.5],
-    hits:[{at:.13/A, range:c.range*(last?1.2:1), arc:last?210:140, dmg:(last?16:10), kb:last?7:2.2, lift:0, fx:true}] };
+    hits:[{at:.13/A, range:c.range*(last?1.3:1.1), arc:last?220:165, dmg:(last?16:10), kb:last?9:3.5, lift:0, fx:true, big:last}] };
 }
 function airMove(){
-  const c=G.char, A=c.aspd;
+  const c=G.char, A=aspd();
   return { kind:'air', anim:'air', dur:.34/A, cancel:.2/A, air:true, hits:[{at:.1/A, range:c.range*.95, arc:230, dmg:9, kb:2.5, lift:4.5, fx:true, yr:2.2}] };
 }
 function cMove(n){
-  const c=G.char, A=c.aspd, R=c.range; const k=Math.min(n,5)+1;
+  const c=G.char, A=aspd(), R=c.range; const k=Math.min(n,5)+1;
   switch(k){
     case 1: return {kind:'C',idx:1,anim:'upper',dur:.62/A,cancel:.5/A,step:[.05/A,.16/A,4],hits:[{at:.2/A,range:R*1.1,arc:150,dmg:16,kb:1.5,lift:11,fx:true,big:true}]};
     case 2: return {kind:'C',idx:2,anim:'thrust',dur:.72/A,cancel:.6/A,step:[.05/A,.44/A,12],hits:[.1,.2,.3,.42].map((t,j)=>({at:t/A,range:R*.85,arc:170,dmg:8,kb:j===3?9:5,lift:j===3?4:0,fx:true}))};
@@ -1345,6 +1395,7 @@ function doHit(h){
   for(const c of CRATES){ if(!c.alive) continue; const dx=c.x-cx, dz=c.z-cz, d=Math.hypot(dx,dz);
     if(d>h.range+c.r||Math.abs(c.y+.5-(h.y+.8))>2.2) continue;
     if(!h.radial&&d>c.r+.5&&Math.abs(angDiff(h.dir,Math.atan2(dx,dz)))>h.arc*D2R/2) continue; breakCrate(c); }
+  for(const st of STRUCTS){ if(st.hp<=0) continue; if(structDist(st,cx,cz)>h.range) continue; hitStruct(st,h.dmg*G.char.pow*(P.buff.big>0?1.3:1)); hit++; }
   if(hit){ G.hitStop=Math.max(G.hitStop,h.big||big?.075:.035); AUD.hit(h.big||big); if(h.shake) G.shake=Math.max(G.shake,h.shake); else G.shake=Math.max(G.shake,.12); }
   return hit;
 }
@@ -1354,19 +1405,23 @@ function damageEnemy(e,h,nx,nz){
   if(el==='thunder') dmg*=1.3;
   if(h.musou) dmg*=1;
   if(e.frozen>0) dmg*=1.25;
+  if(P.buff.big>0) dmg*=1.3;
+  if(e.st==='broken') dmg*=1.6;
   e.hp-=dmg;
+  if(e.type==='boss'&&e.st!=='broken'&&e.hp>0){ e.brk+=dmg; if(e.brk>=e.maxHp*.09) breakBoss(e); }
   const col=el?ELEM[el].col:c.tint;
   PART.burst(e.x,e.y+e.h*.55,e.z,h.big?12:6,{spd:h.big?9:6,col:[0xffffff,col,0xffe9a8],life:.32,size:h.big?.5:.36,drag:5});
   dmgNum(e.x,e.y+e.h+.3,e.z,Math.round(dmg),h.big||dmg>30,el?ELEM[el].css:null);
   G.combo++; G.comboT=2.6; if(G.combo>G.maxCombo) G.maxCombo=G.combo;
-  if(P.state!=='musou') P.musou=Math.min(100,P.musou+(h.musou?0:.9));
+  if(P.state!=='musou') P.musou=Math.min(100,P.musou+(h.musou?0:1.3*(G.fever>0?2:1)));
   e.aggro=true; e.flash=.12;
   if(el==='fire'){ e.burn=3; }
   if(el==='ice'&&e.type!=='boss'){ e.frozen=Math.max(e.frozen,1.1); }
   if(el==='thunder'&&!h.chain){ let n=0; for(const o of EN){ if(o===e||o.dead||n>=2) continue; if(Math.hypot(o.x-e.x,o.z-e.z)<5){ n++; zap(e,o); damageEnemy(o,{dmg:h.dmg*.45,kb:1,lift:0,chain:true},o.x-e.x>0?1:-1,0); } } }
   if(e.hp<=0){ killEnemy(e,nx,nz,h); return; }
-  const armor=e.type==='boss'||(e.type==='captain'&&(e.st==='wind'||e.st==='strike'||e.dash>0));
-  const w=e.type==='boss'?.08:e.type==='captain'?.55:1;
+  const armor=e.type==='boss'||e.type==='cart'||(e.type==='captain'&&(e.giant||e.st==='wind'||e.st==='strike'||e.dash>0));
+  const w=e.type==='boss'||e.type==='cart'?.08:e.type==='captain'?(e.giant?.3:.55):1;
+  if(h.kb>=6&&w>=.5){ e.fly=.55; e.flyHit=null; }
   if(armor){ e.vx+=nx*h.kb*w*.3; e.vz+=nz*h.kb*w*.3; e.squash=.15; return; }
   e.vx=nx*h.kb*w; e.vz=nz*h.kb*w;
   if(h.lift>0||e.st==='air'){ e.vy=Math.max(e.vy,(h.lift>0?h.lift:3.2)*w); e.st='air'; e.y+=.05; }
@@ -1380,16 +1435,23 @@ function zap(a,b){
 function killEnemy(e,nx,nz,h){
   e.dead=true; e.t=0; e.st='dead';
   const w=e.type==='boss'?.3:1;
-  e.vx=nx*(h.kb*1.4+6)*w; e.vz=nz*(h.kb*1.4+6)*w; e.vy=(7+(h.lift||0)*.6)*w;
-  G.ko++; AUD.ko(); P.musou=Math.min(100,P.musou+(P.state==='musou'?0:1.2));
+  e.vx=nx*(h.kb*1.8+8)*w; e.vz=nz*(h.kb*1.8+8)*w; e.vy=(7+(h.lift||0)*.7)*w;
+  if(e.type!=='boss'&&e.type!=='cart'){ e.fly=.8; e.flyHit=null; }
+  G.ko++; AUD.ko(); P.musou=Math.min(100,P.musou+(P.state==='musou'?0:1.6*(G.fever>0?2:1)));
   if(G.ko%100===0) banner(`${G.ko}人撃破！`,'一騎当千！','#ffd23f');
+  else if(G.ko%25===0) koPop(`${G.ko}人撃破！`);
+  if(G.fever>0&&Math.random()<.14) addItem(Math.random()<.6?'star':'onigiri',e.x,e.y+.8,e.z);
+  if(e.type==='cart'&&MIS.st&&MIS.st.type==='carts'){ MIS.st.destroyed++; mvPop('荷車を破壊！','#ffd23f'); addItem('jar',e.x,e.y+1,e.z); addItem('star',e.x+1,e.y+1,e.z); if(Math.random()<.5) addItem(pick(POWER),e.x-1,e.y+1,e.z); }
+  if(e.type==='goblin'){ banner('金ホコリンを撃破！','お宝ザクザク！','#ffd23f'); AUD.fanfare();
+    for(let k=0;k<2;k++) addItem(pick(POWER),e.x+rand(-1,1),e.y+1,e.z+rand(-1,1)); for(let k=0;k<3;k++) addItem('star',e.x+rand(-1.5,1.5),e.y+1,e.z+rand(-1.5,1.5)); addItem('jar',e.x,e.y+1,e.z); }
+  if(e.giant){ addItem('kinoko',e.x,e.y+1,e.z); addItem('niku',e.x+1,e.y+1,e.z); addItem('orb',e.x-1,e.y+1,e.z); banner(`${e.name}を撃破！`,'','#ffd23f'); }
   if(e.label){ e.label.remove(); e.label=null; }
   /* ドロップ */
-  if(e.type==='captain'){ addItem('orb',e.x,e.y+1,e.z); addItem('niku',e.x+1,e.y+1,e.z); }
+  if(e.type==='captain'&&!e.giant){ addItem('orb',e.x,e.y+1,e.z); addItem('niku',e.x+1,e.y+1,e.z); }
   else if(e.type==='grunt'||e.type==='archer'){ const r=Math.random(); if(r<.045) addItem('onigiri',e.x,e.y+.8,e.z); else if(r<.075) addItem('jar',e.x,e.y+.8,e.z); }
   /* 拠点ゲージ */
   if(e.type==='captain'&&e.base) captureBase(e.base);
-  else if(e.type!=='boss'){
+  else if(e.type==='grunt'||e.type==='archer'){
     let b=null; for(const bb of BASES) if(bb.owner==='E'&&Math.hypot(e.x-bb.x,e.z-bb.z)<bb.r+5){ b=bb; break; }
     if(!b&&e.base&&e.base.owner==='E') b=e.base;
     if(b&&!b.capSpawned){ b.gauge=Math.max(0,b.gauge-1); if(b.gauge<=0) spawnCaptain(b); }
@@ -1404,7 +1466,6 @@ function captureBase(b){
   for(const e of EN) if(e.base===b) e.base=null;
   const left=BASES.filter(x=>x.owner==='E').length;
   banner(`拠点「${b.name}」制圧！`, left?`残り ${left} 拠点`:'全拠点制圧！','#3aa0ff');
-  if(!left) G.bossT=2.2;
   updateObjective();
 }
 function spawnCaptain(b){
@@ -1434,21 +1495,24 @@ function onBossDown(e){
 
 /* ------------------------------------------------------------ 敵 */
 const ETYPE={
-  grunt:  {hp:30, spd:2.7,r:.55,h:1.2,range:1.45,dmg:6, wind:.6},
-  archer: {hp:26, spd:2.3,r:.55,h:1.3,range:14,  dmg:6, wind:.55},
-  captain:{hp:420,spd:3.3,r:.8, h:1.8,range:2.4, dmg:13,wind:.45},
+  grunt:  {hp:16, spd:2.7,r:.55,h:1.2,range:1.45,dmg:6, wind:.6},
+  archer: {hp:14, spd:2.3,r:.55,h:1.3,range:14,  dmg:6, wind:.55},
+  captain:{hp:380,spd:3.3,r:.8, h:1.8,range:2.4, dmg:13,wind:.45},
+  cart:   {hp:240,spd:4.2,r:1.2,h:1.5,range:0,   dmg:0, wind:1},
+  goblin: {hp:90, spd:6.2,r:.5, h:1.1,range:0,   dmg:0, wind:1},
   boss:   {hp:2400,spd:3.5,r:1.9,h:4.0,range:4.2,dmg:18,wind:.8},
 };
 function spawnEnemy(type,x,z,base){
   const S=STAGES[stageIdx], T=ETYPE[type], D=DIFF[CFG.diff];
   const R=enemyMesh(type,type==='boss'?S.boss.col:S.eCol,S.boss);
+  const sc0={boss:3.1,captain:1.35}[type]||1;
   const y=groundAt(x,z,50);
   R.root.position.set(x,y,z); world.add(R.root);
   const bl=blob(T.r); world.add(bl);
   let hp=(type==='boss'?S.boss.hp:T.hp)*D.eHp*(type==='captain'?1+stageIdx*.25:1);
   const e={type,R,root:R.root,blob:bl,x,y,z,vx:0,vy:0,vz:0,face:Math.atan2(P.x-x,P.z-z),hp,maxHp:hp,r:T.r,h:T.h,st:'walk',t:0,cd:rand(.5,2),
     base,home:base?[base.x,base.z]:[x,z],aggro:type==='boss',slot:rand(0,TAU),dead:false,lastHit:0,flash:0,squash:0,burn:0,frozen:0,dash:0,
-    wand:rand(0,3),wx:x,wz:z,ph:rand(0,6),hitP:false,pat:null,name:''};
+    wand:rand(0,3),wx:x,wz:z,ph:rand(0,6),hitP:false,pat:null,name:'',sc:sc0,fly:0,brk:0};
   if(type==='boss') makeLabel(e,'','#ff4d6d',true);
   EN.push(e); return e;
 }
@@ -1477,11 +1541,23 @@ function updEnemies(dt){
       case 'air': break;
       case 'down': e.t-=dt; if(e.t<=0) e.st='walk'; break;
       case 'stun': e.t-=dt; if(e.t<=0) e.st='walk'; break;
+      case 'broken': e.t-=dt; if(Math.random()<dt*12){ const a=G.t*5+rand(0,TAU); PART.emit(e.x+Math.cos(a)*1.4,e.y+e.h+.4,e.z+Math.sin(a)*1.4,0,.5,0,.4,.5,0xfff27a); }
+        if(e.t<=0){ e.st='walk'; e.cd=.8; } break;
       case 'walk': {
+        if(e.type==='cart'){ const qx=e.exit[0]-e.x, qz=e.exit[1]-e.z, qd=Math.hypot(qx,qz); mvx=qx/qd*spd; mvz=qz/qd*spd; e.face=turnTo(e.face,Math.atan2(qx,qz),2*dt);
+          if(qd<3){ e.escaped=true; if(MIS.st&&MIS.st.type==='carts') MIS.st.escaped++; mvPop('荷車に逃げられた…','#ff9a9a'); } break; }
+        if(e.type==='goblin'){ e.life-=dt; const ax=-dx/(d||1), az=-dz/(d||1), j=Math.sin(G.t*3+e.ph)*.8;
+          mvx=(ax*Math.cos(j)-az*Math.sin(j))*spd*(d<14?1:.5); mvz=(az*Math.cos(j)+ax*Math.sin(j))*spd*(d<14?1:.5); e.face=Math.atan2(mvx,mvz);
+          if(Math.random()<dt*10) PART.emit(e.x+rand(-.4,.4),e.y+rand(.3,1.2),e.z+rand(-.4,.4),0,1,0,.5,.35,0xffe066);
+          if(e.life<=0){ e.escaped=true; banner('金ホコリンに逃げられた…','','#ff9a9a'); } break; }
+        if(e.type==='boss'&&e.enrage) spd*=1.35;
         if(e.type==='boss'){ bossThink(e,d,toP,dt); mvx=Math.sin(toP)*spd; mvz=Math.cos(toP)*spd; if(d<3) mvx=mvz=0; e.face=turnTo(e.face,toP,3*dt); break; }
         if(!e.aggro&&(d<16*D.aggro||(e.base&&Math.hypot(P.x-e.base.x,P.z-e.base.z)<e.base.r+6))) e.aggro=true;
         if(G.bossPhase) e.aggro=true;
         if(e.aggro&&d>40&&e.base){ e.aggro=false; }
+        if(e.tgt&&e.tgt.hp>0&&d>5&&e.type==='grunt'){ const qx=e.tgt.x-e.x, qz=e.tgt.z-e.z, qd=Math.hypot(qx,qz);
+          if(qd<e.tgt.r+1.3){ if(e.cd<=0){ e.st='wind'; e.t=T.wind; e.tgtAtk=true; } } else { mvx=qx/qd*spd; mvz=qz/qd*spd; }
+          e.face=turnTo(e.face,Math.atan2(qx,qz),6*dt); break; }
         if(!e.aggro){
           e.wand-=dt; if(e.wand<=0){ e.wand=rand(2,4); const a=rand(0,TAU), r=rand(0,5); e.wx=e.home[0]+Math.cos(a)*r; e.wz=e.home[1]+Math.sin(a)*r; }
           const wx=e.wx-e.x, wz=e.wz-e.z, wd=Math.hypot(wx,wz); if(wd>.5){ mvx=wx/wd*spd*.45; mvz=wz/wd*spd*.45; e.face=turnTo(e.face,Math.atan2(wx,wz),4*dt); }
@@ -1514,8 +1590,13 @@ function updEnemies(dt){
       }
       case 'strike': {
         e.t+=dt;
-        if(e.dash>0){ e.dash-=dt; mvx=Math.sin(e.face)*(e.type==='boss'?15:9); mvz=Math.cos(e.face)*(e.type==='boss'?15:9);
-          if(!e.hitP&&d<e.r+.9&&Math.abs(P.y-e.y)<e.h){ e.hitP=true; hurtPlayer((e.type==='boss'?18:12)*D.eDmg,e.x,e.z,9); }
+        if(e.suck>0){ /* 吸い込み中は bossSuck で処理 */ }
+        else if(e.dash>0){ e.dash-=dt; if(e.roll){ e.face=turnTo(e.face,toP,1.3*dt); if(Math.hypot(e.x,e.z)>ISL-5) e.face=Math.atan2(-e.x,-e.z); }
+          const ds=e.roll?11:(e.type==='boss'?15:9); mvx=Math.sin(e.face)*ds; mvz=Math.cos(e.face)*ds;
+          if(e.roll&&e.hitP&&G.t-(e.hitPT||0)>.7) e.hitP=false;
+          if(!e.hitP&&d<e.r+.9&&Math.abs(P.y-e.y)<e.h){ e.hitP=true; e.hitPT=G.t; hurtPlayer((e.type==='boss'?18:12)*D.eDmg,e.x,e.z,9); }
+          if(e.roll&&Math.random()<.5) for(const o of EN){ if(o===e||o.dead||o.type==='boss') continue; if(Math.hypot(o.x-e.x,o.z-e.z)<e.r+o.r){ o.hp=0; killEnemy(o,Math.sin(e.face),Math.cos(e.face),{kb:6,lift:5}); } }
+          if(e.dash<=0) e.roll=false;
           if(Math.random()<.5) PART.emit(e.x,e.y+.2,e.z,rand(-1,1),1,rand(-1,1),.4,.6,0xd8d0c0,0,2);
           if(e.dash<=0){ e.st='rec'; e.t=.5; }
         }else if(e.t>.12){ e.st='rec'; e.t=e.type==='boss'?.6:.55; }
@@ -1531,6 +1612,8 @@ function updEnemies(dt){
     else { e.vx=damp(e.vx,mvx,8,dt); e.vz=damp(e.vz,mvz,8,dt); }
     e.x+=e.vx*dt; e.z+=e.vz*dt; e.y+=e.vy*dt;
     if(e.y<=g){ e.y=g; if(e.st==='air'){ if(e.vy<-6&&e.type!=='boss'){ PART.burst(e.x,e.y+.1,e.z,5,{spd:3,col:0xd8d0c0,flat:1,life:.4,size:.5}); } e.st='down'; e.t=.5; e.vx*=.3; e.vz*=.3; } e.vy=0; }
+    if(e.escaped){ PART.burst(e.x,e.y+.8,e.z,14,{spd:5,col:[0xffffff,0xbfc4d0],life:.5,size:.6}); removeEnemy(e); EN.splice(i,1); continue; }
+    if(e.suck>0) bossSuck(e,dt);
     pushOut(e,e.r*.8,e.h);
     if(e.flash>0) e.flash-=dt; if(e.squash>0) e.squash-=dt;
     animEnemy(e,dt,Math.hypot(e.vx,e.vz));
@@ -1549,6 +1632,7 @@ function updEnemies(dt){
 function enemyStrike(e,d,toP){
   const D=DIFF[CFG.diff], T=ETYPE[e.type];
   const inArc=(r,arc)=>d<r+.4&&Math.abs(angDiff(e.face,toP))<arc&&Math.abs(P.y-e.y)<1.6;
+  if(e.type==='grunt'&&e.tgtAtk){ e.tgtAtk=false; const tg=e.tgt; if(tg&&tg.hp>0&&Math.hypot(tg.x-e.x,tg.z-e.z)<tg.r+2){ tg.hp-=4; tg.hitT=.2; PART.burst(tg.x,1.6,tg.z,6,{spd:3,col:[0x8a7a6a,0x5a4a3a],life:.5,size:.5}); } return; }
   if(e.type==='grunt'){ if(inArc(T.range+.3,1.1)) hurtPlayer(T.dmg*D.eDmg,e.x,e.z,4); }
   else if(e.type==='archer'){
     const lead=.35, tx=P.x+P.vx*lead, tz=P.z+P.vz*lead, dd=Math.hypot(tx-e.x,tz-e.z)||1, sp=15;
@@ -1561,19 +1645,38 @@ function enemyStrike(e,d,toP){
   }
   else if(e.type==='boss'){ bossStrike(e,d,toP); }
 }
-/* ボスAI */
+/* ボスAI ─ 共通技＋ボスごとの固有技、HP半分で第2形態、ブレイクで大チャンス */
+const BOSS_WIND={slam:1.0,sweep:.7,charge:.8,volley:.7,roll:.8,summon:.6,suck:.8,dust:.6,meteor:.6,rings:.8};
 function bossThink(e,d,toP,dt){
-  const D=DIFF[CFG.diff];
   if(e.cd>0) return;
-  const r=Math.random(), low=e.hp<e.maxHp*.4;
-  e.pat = d<5 ? (r<.5?'slam':'sweep') : d<14 ? (r<.4?'charge':r<.7?'volley':'slam') : (r<.6?'volley':'charge');
-  e.st='wind'; e.t={slam:1.0,sweep:.7,charge:.8,volley:.7}[e.pat]*(low?.8:1);
-  if(e.pat==='slam') FX.tel(e.x,e.z,6.5,e.t);
-  if(e.pat==='sweep') FX.tel(e.x,e.z,5,e.t,0xff7a2a);
-  if(e.pat==='charge') AUD.alarm();
-  if(low&&Math.random()<.5){ for(let k=0;k<3;k++) if(EN.length<STAGES[stageIdx].eMax+8){ const a=rand(0,TAU); spawnEnemy('grunt',e.x+Math.cos(a)*5,e.z+Math.sin(a)*5,null).aggro=true; } }
+  if(!e.p2&&e.hp<e.maxHp*.5){ e.p2=true; bossPhase2(e); e.cd=1.2; return; }
+  let pool = d<5 ? ['slam','sweep'] : d<14 ? ['charge','volley','slam'] : ['volley','charge'];
+  if(e.kind==='hokori') pool.push('roll','roll','summon');
+  if(e.kind==='vacuum') pool.push('suck','suck','dust');
+  if(e.kind==='king')   pool.push('meteor','meteor','rings');
+  let pt=pick(pool); if(pt===e.lastPat) pt=pick(pool); e.pat=e.lastPat=pt;
+  e.st='wind'; e.t=BOSS_WIND[pt]*(e.enrage?.75:1);
+  if(pt==='slam') FX.tel(e.x,e.z,6.5,e.t);
+  if(pt==='sweep') FX.tel(e.x,e.z,5,e.t,0xff7a2a);
+  if(pt==='charge'||pt==='roll') AUD.alarm();
+  if(pt==='suck') mvPop(`${e.name}の吸い込み！ 回避で逃げろ`,'#b98cff');
+  if(pt==='rings') mvPop('衝撃波！ ジャンプでかわせ','#ff9a3c');
+  if(pt==='meteor'){ e.mt=[]; for(let k=0;k<(e.enrage?9:6);k++){ const a=rand(0,TAU), r=k===0?0:rand(2,8); const x=P.x+Math.cos(a)*r, z=P.z+Math.sin(a)*r; e.mt.push([x,z]); FX.tel(x,z,2.4,e.t+1.0,0xff6a20); } }
 }
-function bossWind(e,dt){ e.squash=.05; if(Math.random()<dt*20) PART.emit(e.x+rand(-1.5,1.5),e.y+rand(1,3.5),e.z+rand(-1.5,1.5),0,2,0,.4,.5,0xff4d6d); }
+function bossPhase2(e){
+  flash(.4,'#ff4d6d'); G.shake=.8; AUD.alarm();
+  if(e.kind==='hokori'){ banner('ホコリン大将が分裂した！','子ホコリンを蹴散らせ','#ff4d6d');
+    for(const sx of[-1,1]){ const g=spawnGiant(e.x+sx*5,e.z+3,'子ホコリン',520); g.aggro=true; } }
+  else if(e.kind==='vacuum'){ banner('ソウジキ魔人 最大出力！','吸引力が上がった','#b98cff'); e.power=1.6;
+    for(const sx of[-1,1]){ const a=Math.atan2(P.x-e.x,P.z-e.z)+sx; spawnEnemy('captain',e.x+Math.sin(a)*5,e.z+Math.cos(a)*5,null).aggro=true; } }
+  else { banner('ヨゴレキング 激怒！','攻撃が激しくなる','#ff4d6d'); e.enrage=true; }
+}
+function breakBoss(e){
+  e.st='broken'; e.t=3.4; e.brk=0; e.dash=0; e.roll=false; e.suck=0; e.vx=e.vz=0;
+  mvPop('ブレイク！ 大チャンス！','#8ff0ff'); flash(.3,'#8ff0ff'); AUD.capture(); G.hitStop=.12;
+  FX.ring(e.x,.2,e.z,6,0x8ff0ff,.6); PART.burst(e.x,e.y+e.h,e.z,30,{spd:8,col:[0x8ff0ff,0xffffff],life:.8,size:.6});
+}
+function bossWind(e,dt){ e.squash=.05; if(Math.random()<dt*20) PART.emit(e.x+rand(-1.5,1.5),e.y+rand(1,3.5),e.z+rand(-1.5,1.5),0,2,0,.4,.5,e.pat==='suck'?0xb98cff:0xff4d6d); }
 function bossStrike(e,d,toP){
   const D=DIFF[CFG.diff], dm=D.eDmg*(1+stageIdx*.15);
   switch(e.pat){
@@ -1583,9 +1686,54 @@ function bossStrike(e,d,toP){
     case 'sweep': FX.arc(e.x,e.y+1.2,e.z,e.face,5,0xff7a2a,{full:true,life:.3,spin:10}); AUD.swing();
       if(d<5&&P.y-e.y<2.4) hurtPlayer(15*dm,e.x,e.z,10); break;
     case 'charge': e.dash=.75; break;
+    case 'roll': e.dash=2.4; e.roll=true; e.hitP=false; break;
+    case 'summon': { const n=e.p2?8:6; for(let k=0;k<n;k++){ const a=k/n*TAU; spawnEnemy('grunt',e.x+Math.cos(a)*4,e.z+Math.sin(a)*4,null).aggro=true; }
+      FX.ring(e.x,.2,e.z,5,0xb98cff,.5); break; }
+    case 'suck': e.suck=2.6*(e.power||1)/(e.power?1.2:1); AUD.musou(); break;
+    case 'dust': for(let k=0;k<(e.power?4:3);k++){ const a=Math.atan2(P.x-e.x,P.z-e.z)+(k-1)*.7;
+        spawnProj('dust',e.x+Math.sin(a)*3,e.y,e.z+Math.cos(a)*3,Math.sin(a)*4,0,Math.cos(a)*4,{dmg:10*dm,r:1.4,life:6,owner:'E',ground:true,persist:true,homeP:true}); } break;
+    case 'meteor': (e.mt||[]).forEach(([x,z],k)=>spawnProj('meteor',x+rand(-.5,.5),groundAt(x,z,99)+22,z+rand(-.5,.5),0,-22,0,{dmg:0,r:.9,life:2.5,owner:'E',boom:{r:2.4,dmg:16*dm}})); break;
+    case 'rings': for(let k=0;k<(e.enrage?4:3);k++) G.srings.push({x:e.x,z:e.z,t:-k*.7,L:1.6,R:16,hit:false,dmg:13*dm}); G.shake=.4; break;
     case 'volley': { const n=12+stageIdx*4; for(let k=0;k<n;k++){ const a=k/n*TAU; spawnProj('orb',e.x,e.y+2,e.z,Math.sin(a)*8,0,Math.cos(a)*8,{dmg:11*dm,r:.5,life:3,owner:'E'}); }
       const dd=Math.hypot(P.x-e.x,P.z-e.z)||1; spawnProj('orb',e.x,e.y+2,e.z,(P.x-e.x)/dd*12,(P.y+1-(e.y+2))/dd*12,(P.z-e.z)/dd*12,{dmg:12*dm,r:.55,life:3,owner:'E'}); AUD.shot(); break; }
   }
+}
+/* ソウジキ魔人の吸い込み：プレイヤーも雑兵も吸い寄せ、最後に吐き出す */
+function bossSuck(e,dt){
+  e.suck-=dt; const pw=(e.power||1);
+  const dx=e.x-P.x, dz=e.z-P.z, d=Math.hypot(dx,dz)||1;
+  if(P.state!=='dodge'&&d<22){ P.x+=dx/d*5.2*pw*dt; P.z+=dz/d*5.2*pw*dt; }
+  if(d<e.r+1&&P.state!=='dodge') hurtPlayer(9*DIFF[CFG.diff].eDmg,e.x,e.z,10);
+  for(const o of EN){ if(o===e||o.dead||o.type==='boss') continue; const ox=e.x-o.x, oz=e.z-o.z, od=Math.hypot(ox,oz)||1;
+    if(od<20){ o.x+=ox/od*7*dt; o.z+=oz/od*7*dt; if(od<e.r+.6){ o.hp=0; killEnemy(o,-ox/od,-oz/od,{kb:3,lift:6}); } } }
+  for(let k=0;k<3;k++){ const a=rand(0,TAU), r=rand(6,16); PART.emit(e.x+Math.cos(a)*r,e.y+rand(.3,2),e.z+Math.sin(a)*r,-Math.cos(a)*r*1.4,0,-Math.sin(a)*r*1.4,.6,.4,pick([0xb98cff,0xd8d0c0])); }
+  if(e.suck<=0){ e.suck=0; FX.ring(e.x,.2,e.z,5,0xb98cff,.5); G.shake=.5; AUD.blast(); if(d<5) hurtPlayer(16*DIFF[CFG.diff].eDmg,e.x,e.z,14); e.st='rec'; e.t=.9; }
+}
+/* 衝撃波リング（ジャンプで回避） */
+function updRings(dt){
+  for(let i=G.srings.length-1;i>=0;i--){ const r=G.srings[i]; const t0=r.t; r.t+=dt;
+    if(t0<0&&r.t>=0){ FX.ring(r.x,.25,r.z,r.R,0xff4d6d,r.L,0); AUD.swing(); }
+    if(r.t<0) continue;
+    const k=1-r.t/r.L, rr=r.R*(1-k*k);
+    const d=Math.hypot(P.x-r.x,P.z-r.z);
+    if(!r.hit&&Math.abs(d-rr)<.9&&P.y-groundAt(P.x,P.z,P.y)<.5){ r.hit=true; hurtPlayer(r.dmg,r.x,r.z,8); }
+    if(r.t>=r.L) G.srings.splice(i,1);
+  }
+}
+/* ふっとばし連鎖：勢いよく飛んだ敵が他の敵を巻き込む */
+function updFly(dt){
+  for(const e of EN){ if(!(e.fly>0)) continue; e.fly-=dt;
+    const sp=Math.hypot(e.vx,e.vz); if(sp<5) continue;
+    for(const o of EN){ if(o===e||o.dead||o.type==='boss'||o.type==='cart') continue;
+      if(Math.abs(o.x-e.x)>1.4||Math.abs(o.z-e.z)>1.4) continue;
+      if(Math.hypot(o.x-e.x,o.z-e.z)>e.r+o.r+.25||Math.abs(o.y-e.y)>1.6) continue;
+      if(!e.flyHit) e.flyHit=new Set(); if(e.flyHit.has(o)) continue; e.flyHit.add(o);
+      damageEnemy(o,{dmg:9,kb:Math.min(12,sp*.65),lift:4,chain:true},e.vx/sp,e.vz/sp);
+      PART.burst(o.x,o.y+.7,o.z,5,{spd:5,col:[0xffffff,0xffe9a8],life:.3,size:.4});
+      G.flyN=(G.flyN||0)+1; G.flyT=.6;
+    }
+  }
+  if(G.flyT>0){ G.flyT-=dt; if(G.flyT<=0){ if(G.flyN>=4) koPop(`ふっとばし連鎖 ×${G.flyN}！`); G.flyN=0; } }
 }
 function animEnemy(e,dt,sp){
   const R=e.R; e.ph+=dt*(4+sp*2.2);
@@ -1596,13 +1744,16 @@ function animEnemy(e,dt,sp){
   if(e.st==='air'){ e.root.rotation.x=-.6; }
   if(e.st==='down'){ e.root.rotation.x=-1.2*(Math.min(1,e.t*3)); }
   if(e.frozen>0){ sy=1; sxz=1; }
-  e.R.body.scale.set((e.type==='boss'?3.1:e.type==='captain'?1.35:1)*sxz,(e.type==='boss'?3.1:e.type==='captain'?1.35:1)*sy,(e.type==='boss'?3.1:e.type==='captain'?1.35:1)*sxz);
+  if(e.st==='broken'){ e.root.rotation.x=-.3+Math.sin(G.t*6)*.08; e.root.rotation.z=Math.sin(G.t*4)*.12; }
+  if(e.roll&&e.dash>0) e.root.rotation.x=G.t*9;
+  e.R.body.scale.set(e.sc*sxz,e.sc*sy,e.sc*sxz);
+  if(R.wheels) for(const w of R.wheels) w.rotation.x+=dt*sp*1.8;
   if(R.fL){ R.fL.position.z=.05+Math.sin(e.ph)*.14*Math.min(1,sp/2); R.fR.position.z=.05-Math.sin(e.ph)*.14*Math.min(1,sp/2); R.body.position.y=Math.abs(Math.sin(e.ph))*.06*Math.min(1,sp/2); }
   if(R.arm){
     if(e.type==='archer'){ R.arm.rotation.x=e.st==='wind'?-.3:e.st==='strike'?.2:0; }
     else R.arm.rotation.x=e.st==='wind'?-2.2:e.st==='strike'?1.4:e.st==='rec'?1.0:Math.sin(e.ph)*.2;
   }
-  if(R.cmat){ R.cmat.emissive.setHex(e.frozen>0?0x2a6aa8:e.flash>0?0xffffff:e.burn>0?0x882200:e.st==='wind'?0x551010:0x000000); R.cmat.emissiveIntensity=e.flash>0?1.2:.6; }
+  if(R.cmat){ R.cmat.emissive.setHex(e.frozen>0?0x2a6aa8:e.flash>0?0xffffff:e.st==='broken'?0x1a5a9a:e.burn>0?0x882200:e.st==='wind'?0x551010:e.enrage?0x5a0a0a:0x000000); R.cmat.emissiveIntensity=e.flash>0?1.2:.6; }
   e.blob.position.set(e.x,groundAt(e.x,e.z,e.y)+.03,e.z); e.blob.visible=true;
 }
 
@@ -1613,7 +1764,7 @@ function spawnProj(type,x,y,z,vx,vy,vz,o){
   let m;
   if(type==='wave'){ m=new THREE.Mesh(WAVE_GEO,basic(o.col||0xffffff,.85,true)); m.rotation.y=Math.atan2(vx,vz)+Math.PI; }
   else if(type==='star'){ m=new THREE.Mesh(STAR_GEO,PROJ_MAT.star); m.scale.setScalar(.8); }
-  else if(type==='tornado'){ m=new THREE.Group(); for(let k=0;k<3;k++){ const c=new THREE.Mesh(CONE,basic(k?0xffb020:0xff5a1f,.45,true)); c.scale.set(1.3-k*.3,3.4,1.3-k*.3); c.rotation.x=Math.PI; c.position.y=1.7; m.add(c); } }
+  else if(type==='tornado'||type==='dust'){ m=new THREE.Group(); for(let k=0;k<3;k++){ const c=new THREE.Mesh(CONE,type==='dust'?basic(k?0xc8b8d8:0x8a7a9a,.55,false):basic(k?0xffb020:0xff5a1f,.45,true)); c.scale.set(1.3-k*.3,3.4,1.3-k*.3); c.rotation.x=Math.PI; c.position.y=1.7; m.add(c); } }
   else if(type==='gorilla'){ m=new THREE.Group(); const fur=mat(0x3a2a22,{rough:.9}), face=mat(0x8a6a4a,{rough:.7});
     const add=(g,mt,sx,sy,sz,x,y,z)=>{ const o=new THREE.Mesh(g,mt); o.scale.set(sx,sy,sz); o.position.set(x,y,z); o.castShadow=true; m.add(o); return o; };
     add(SPH,fur,.9,.95,.75,0,1.2,0); add(SPH,fur,.45,.45,.45,0,2.05,.25); add(SPH,face,.3,.26,.2,0,1.98,.6);
@@ -1625,6 +1776,7 @@ function spawnProj(type,x,y,z,vx,vy,vz,o){
 }
 function updProj(dt){
   for(let i=PROJ.length-1;i>=0;i--){ const p=PROJ[i]; p.t+=dt; p.life-=dt;
+    if(p.homeP){ const sp=Math.hypot(p.vx,p.vz)||1, a=Math.atan2(p.vx,p.vz), b=Math.atan2(P.x-p.x,P.z-p.z), na=turnTo(a,b,.9*dt); p.vx=Math.sin(na)*sp; p.vz=Math.cos(na)*sp; }
     if(p.home&&p.t>.12){ let best=null,bd=9; for(const e of EN){ if(e.dead) continue; const d=Math.hypot(e.x-p.x,e.z-p.z); if(d<bd){ bd=d; best=e; } }
       if(best){ const sp=Math.hypot(p.vx,p.vz), a=Math.atan2(p.vx,p.vz), b=Math.atan2(best.x-p.x,best.z-p.z), na=turnTo(a,b,6*dt); p.vx=Math.sin(na)*sp; p.vz=Math.cos(na)*sp; } }
     p.x+=p.vx*dt; p.y+=p.vy*dt; p.z+=p.vz*dt;
@@ -1632,6 +1784,7 @@ function updProj(dt){
     p.m.position.set(p.x,p.y,p.z);
     if(p.tick){ p.tt=(p.tt||0)+dt; if(p.tt>=p.tick){ p.tt=0; p.hit.clear(); } }
     if(p.pull) for(const e of EN){ if(e.dead||e.type==='boss') continue; const dx=p.x-e.x, dz=p.z-e.z, d=Math.hypot(dx,dz); if(d<p.r*2.2&&d>.3){ e.x+=dx/d*p.pull*dt; e.z+=dz/d*p.pull*dt; } }
+    if(p.type==='dust'){ p.m.rotation.y+=dt*14; if(Math.random()<.5) PART.emit(p.x+rand(-1,1),p.y+rand(0,3),p.z+rand(-1,1),0,1.5,0,.5,.5,0xb8a8c8,0,1); }
     if(p.type==='tornado'){ p.m.rotation.y+=dt*16; for(let k=0;k<2;k++){ const a=rand(0,TAU), h=rand(0,3.4); PART.emit(p.x+Math.cos(a)*(.4+h*.35),p.y+h,p.z+Math.sin(a)*(.4+h*.35),-Math.sin(a)*4,1.5,Math.cos(a)*4,.4,.45,pick([0xff6a20,0xffb020])); } }
     if(p.type==='gorilla'){ p.m.rotation.y=Math.atan2(p.vx,p.vz); p.m.position.y=p.y+Math.abs(Math.sin(p.t*14))*.3; if(Math.random()<.4) PART.emit(p.x,p.y+.2,p.z,rand(-1,1),1,rand(-1,1),.4,.6,0xd8d0c0); }
     if(p.type==='meteor'&&Math.random()<.8) PART.emit(p.x,p.y+.5,p.z,rand(-.5,.5),2,rand(-.5,.5),.4,.7,pick([0xff6a20,0xffb020,0xff3a00]));
@@ -1644,20 +1797,23 @@ function updProj(dt){
     let dead=p.life<=0;
     const g=groundAt(p.x,p.z,p.y); if(p.type!=='wave'&&!p.ground&&p.y<g+.1) dead=true;
     if(p.owner==='E'){
-      if(Math.hypot(P.x-p.x,P.z-p.z)<p.r+.45&&p.y>P.y-.2&&p.y<P.y+1.8){ if(hurtPlayer(p.dmg,p.x-p.vx,p.z-p.vz,5)!==false) dead=true; }
+      if(!p.boom&&Math.hypot(P.x-p.x,P.z-p.z)<p.r+.45&&p.y>P.y-(p.ground?1:.2)&&p.y<P.y+1.8){ if(hurtPlayer(p.dmg,p.x-p.vx,p.z-p.vz,5)!==false&&!p.persist) dead=true; }
     }else{
       for(const e of EN){ if(e.dead||p.hit.has(e)) continue;
         if(Math.hypot(e.x-p.x,e.z-p.z)<e.r+p.r&&p.y>e.y-.5&&p.y<e.y+e.h+.6){ p.hit.add(e); const d=Math.hypot(p.vx,p.vz)||1;
           damageEnemy(e,{dmg:p.dmg,kb:p.kb||5,lift:p.lift||0,big:false},p.vx/d,p.vz/d); G.hitStop=Math.max(G.hitStop,.02); AUD.hit(false);
           if(!p.pierce){ dead=true; break; } } }
       for(const c of CRATES) if(c.alive&&Math.hypot(c.x-p.x,c.z-p.z)<c.r+p.r&&p.y<c.y+1.4) breakCrate(c);
+      for(const st of STRUCTS){ if(st.hp<=0||p.hit.has(st)) continue; if(structDist(st,p.x,p.z)<p.r){ p.hit.add(st); hitStruct(st,p.dmg||20); if(!p.pierce) dead=true; } }
     }
     if(dead){
-      if(p.boom){ doHit({x:p.x,y:g,z:p.z,dir:0,range:p.boom.r,radial:true,dmg:p.boom.dmg,kb:7,lift:7,big:true,yr:2.5}); FX.ring(p.x,g+.15,p.z,p.boom.r,0xff6a20,.45);
+      if(p.boom&&p.owner==='E'){ if(Math.hypot(P.x-p.x,P.z-p.z)<p.boom.r+.4&&P.y-g<1.6) hurtPlayer(p.boom.dmg,p.x,p.z,9); }
+      else if(p.boom){ doHit({x:p.x,y:g,z:p.z,dir:0,range:p.boom.r,radial:true,dmg:p.boom.dmg,kb:7,lift:7,big:true,yr:2.5}); }
+      if(p.boom){ FX.ring(p.x,g+.15,p.z,p.boom.r,0xff6a20,.45);
         PART.burst(p.x,g+.4,p.z,18,{spd:9,col:[0xff6a20,0xffb020,0x5a4030],life:.5,size:.6}); G.shake=Math.max(G.shake,.25); AUD.blast(); }
       world.remove(p.m);
       if(p.type==='wave') p.m.material.dispose();
-      if(p.type==='tornado') p.m.children.forEach(c=>c.material.dispose());
+      if(p.type==='tornado'||p.type==='dust') p.m.children.forEach(c=>c.material.dispose());
       PROJ.splice(i,1); }
   }
 }
@@ -1668,7 +1824,7 @@ function spawnPlayer(){
   if(P.rig){ world.remove(P.rig.root); } if(P.blob) world.remove(P.blob);
   P.rig=heroMesh(c); world.add(P.rig.root); P.blob=blob(.5); world.add(P.blob);
   Object.assign(P,{x:START[0],y:0,z:START[1],vx:0,vy:0,vz:0,face:Math.PI,onG:true,state:'move',t:0,mv:null,hp:c.hp,maxHp:c.hp,musou:0,inv:1,
-    jumps:c.jumps,elem:null,elemT:0,floatT:0,airAtk:0,bufA:0,bufC:0,walk:0,spdN:0,aura:0});
+    jumps:c.jumps,elem:null,elemT:0,floatT:0,airAtk:0,bufA:0,bufC:0,walk:0,spdN:0,aura:0,buff:{big:0,fast:0,star:0},bombT:0,rs:1});
   CAM.yaw=0; CAM.pitch=.36; CAM.tx=P.x; CAM.tz=P.z; CAM.ty=1.4; CAM.dist=CAM.zoomT=CAM.occ=10;
 }
 function startMove(mv){
@@ -1678,12 +1834,16 @@ function startMove(mv){
   else { let best=null,bd=4.5; for(const e of EN){ if(e.dead) continue; const d=Math.hypot(e.x-P.x,e.z-P.z); if(d<bd&&Math.abs(angDiff(P.face,Math.atan2(e.x-P.x,e.z-P.z)))<1.8){ bd=d; best=e; } }
     if(best) P.face=Math.atan2(best.x-P.x,best.z-P.z); }
   if(mv.air){ P.vy=Math.max(P.vy,2.2); P.airAtk++; }
+  if(mv.kind==='C'){ const nm=CNAME(G.char)[Math.min(mv.idx,6)-1]; mvPop(`C${mv.idx}  ${nm}`,ELEM_CSS(G.char.tint)); if(mv.idx>=5){ G.slow=.55; G.slowT=.25; } }
+  if(mv.kind==='dash') mvPop('ダッシュ攻撃',ELEM_CSS(G.char.tint));
   AUD.swing();
 }
 function fireHit(h){
   const c=G.char, col=P.elem?ELEM[P.elem].col:c.tint;
   const hh=Object.assign({x:P.x,y:P.y,z:P.z,dir:P.face},h);
+  if(P.buff.big>0){ hh.range*=1.45; h=Object.assign({},h,{range:hh.range}); }
   doHit(hh);
+  if(h.big&&h.ring) flash(.18);
   const fx=P.x+(h.off?Math.sin(P.face)*h.off:0), fz=P.z+(h.off?Math.cos(P.face)*h.off:0);
   if(h.fx) FX.arc(fx,P.y+.9,fz,P.face,h.range,col,{full:h.full||h.radial,sweep:h.full?0:(P.mv&&P.mv.anim==='swingL'?-.5:.5),spin:h.full?14:0,life:h.full?.26:.18,tilt:P.mv&&P.mv.anim==='over'?.9:P.mv&&P.mv.anim==='upper'?-.9:0});
   if(h.ring){ FX.ring(fx,P.y+.15,fz,h.range,col,.5); FX.ring(fx,P.y+.2,fz,h.range*.7,0xffffff,.35); PART.burst(fx,P.y+.3,fz,26,{spd:11,col:[col,0xffffff,0xd8d0c0],flat:1,life:.55,size:.55}); AUD.blast(); }
@@ -1693,7 +1853,8 @@ function fireHit(h){
 function hurtPlayer(dmg,fx,fz,kb){
   if(P.inv>0||P.state==='musou'||P.state==='dead'||G.over) return false;
   if(P.state==='dodge'&&P.t<.34) return false;
-  const c=G.char; const armor=(c.armor||(P.mv&&P.mv.armor))&&P.state==='atk';
+  if(P.buff.star>0) return false;
+  const c=G.char; const armor=((c.armor||(P.mv&&P.mv.armor))&&P.state==='atk')||P.buff.big>0;
   dmg*=armor?.6:1;
   P.hp-=dmg; P.musou=Math.min(100,P.musou+dmg*.5); G.combo=0; G.comboT=0;
   AUD.hurt(); G.shake=Math.max(G.shake,.3);
@@ -1736,11 +1897,19 @@ function updPlayer(dt){
   P.inv=Math.max(0,P.inv-dt);
   if(e.atk) P.bufA=.32; if(e.chg) P.bufC=.32; P.bufA-=dt; P.bufC-=dt;
   if(P.elemT>0){ P.elemT-=dt; if(P.elemT<=0){ P.elem=null; } }
+  for(const k in P.buff) if(P.buff[k]>0){ P.buff[k]-=dt; if(P.buff[k]<=0){ P.buff[k]=0; mvPop({big:'巨大化 おわり',fast:'スピード おわり',star:'無敵 おわり'}[k],'#cccccc'); } }
+  if(P.buff.star>0){ const hue=(G.t*2)%1; if(Math.random()<.9) PART.emit(P.x+rand(-.6,.6),P.y+rand(.2,1.8),P.z+rand(-.6,.6),0,2,0,.5,.45,new THREE.Color().setHSL(hue,1,.6).getHex());
+    for(const e of EN){ if(e.dead||e.type==='boss') continue; if(Math.abs(e.x-P.x)>2.5||Math.abs(e.z-P.z)>2.5) continue; const d=Math.hypot(e.x-P.x,e.z-P.z);
+      if(d<e.r+1.1&&G.t-(e.shT||-9)>.35){ e.shT=G.t; damageEnemy(e,{dmg:24,kb:13,lift:8,big:true},(e.x-P.x)/(d||1),(e.z-P.z)/(d||1)); AUD.hit(true); } } }
+  if(P.bombT>0){ P.bombT-=dt; if(Math.random()<.6) PART.emit(P.x,P.y+2.4,P.z,rand(-1,1),2,rand(-1,1),.3,.35,0xffb020);
+    if(P.bombT<=0){ doHit({x:P.x,y:P.y,z:P.z,dir:P.face,range:7.5,radial:true,dmg:55,kb:15,lift:10,big:true,yr:4});
+      FX.ring(P.x,P.y+.2,P.z,8,0xff6a20,.6); FX.ring(P.x,P.y+.3,P.z,5,0xffe066,.45); PART.burst(P.x,P.y+1,P.z,60,{spd:16,col:[0xff6a20,0xffb020,0x5a4030,0xffffff],life:.8,size:.8});
+      flash(.5,'#ffd8a0'); G.shake=1; AUD.blast(); mvPop('ドカーン！','#ff9a3c'); } }
   let tvx=0, tvz=0, acc=30;
   if(G.over&&P.state!=='dead'){ P.state='move'; }
   switch(P.state){
     case 'move': {
-      const sp=c.spd*(P.onG?1:.95); acc=P.onG?16:7;
+      const sp=c.spd*(P.onG?1:.95)*(P.buff.fast>0?1.45:1)*(P.buff.star>0?1.2:1); acc=P.onG?16:7;
       if(mm>.01&&!G.over){ tvx=mx*sp*mm; tvz=mz*sp*mm; P.face=turnTo(P.face,Math.atan2(mx,mz),14*dt); }
       if(G.over) break;
       if(e.jump) tryJump();
@@ -1776,6 +1945,8 @@ function updPlayer(dt){
       P.t+=dt; const dur=c.spd>=8?.44:.4, sp=c.spd>=8?14:12;
       const k=1-P.t/dur; tvx=P.ddx*sp*Math.max(.25,k); tvz=P.ddz*sp*Math.max(.25,k); acc=40;
       if(Math.random()<.5) PART.emit(P.x,P.y+.2,P.z,rand(-1,1),.5,rand(-1,1),.3,.45,0xe8f4ff);
+      if(P.t>.1&&P.bufA>0&&P.onG){ P.bufA=0; const R=c.range, A=aspd();
+        startMove({kind:'dash',anim:'thrust',dur:.5/A,cancel:.4/A,step:[0,.26/A,15],hits:[.07,.17].map((t,j)=>({at:t/A,range:R*1.1,arc:190,dmg:12,kb:j?10:7,lift:j?4:2,fx:true,big:j===1}))}); break; }
       if(P.t>=dur){ P.state='move'; if(P.bufA>0){ P.bufA=0; if(P.onG) startMove(nMove(0)); } else if(P.bufC>0&&P.onG){ P.bufC=0; startMove(cMove(0)); } }
       break; }
     case 'hurt': {
@@ -1864,6 +2035,10 @@ function takeItem(it){
     case 'jar': P.musou=Math.min(100,P.musou+50); AUD.pick(); PART.burst(it.x,it.y,it.z,14,{spd:5,col:[0xffd23f,0xff7a2a],life:.6,size:.45}); break;
     case 'orb': P.elem=it.elem; P.elemT=25; AUD.elem(); banner(`コピー能力「${ELEM[it.elem].name}」`,'25秒間 攻撃に属性がつく',ELEM[it.elem].css);
       PART.burst(P.x,P.y+1,P.z,30,{spd:8,col:[ELEM[it.elem].col,0xffffff],life:.7,size:.5}); break;
+    case 'kinoko': P.buff.big=12; AUD.elem(); mvPop('🍄 巨大化！ 攻撃範囲アップ','#ff6a6a'); flash(.25,'#ffd0d0'); break;
+    case 'shoes': P.buff.fast=15; AUD.elem(); mvPop('👟 スピードアップ！','#39c5ff'); break;
+    case 'muteki': P.buff.star=8; AUD.fanfare(); mvPop('🌟 無敵！ 体当たりで蹴散らせ','#ff9ad5'); flash(.3,'#ffe0f4'); break;
+    case 'bomb': P.bombT=1.1; AUD.alarm(); mvPop('💣 爆弾！','#ff9a3c'); break;
     case 'hiyoko': G.hiyo++; AUD.chick(); banner(`迷子のひよこを救出！`,`${G.hiyo} / ${TOWERS.length}`,'#ffe24a');
       PART.burst(it.x,it.y+.8,it.z,30,{spd:6,col:[0xffe24a,0xffffff,0xff9ad5],life:1,size:.5,up:2}); heal(P.maxHp*.1,true); break;
   }
@@ -1875,7 +2050,9 @@ function updItems(dt){
     const bob=it.fixed||it.type==='hiyoko'?Math.sin(it.t*2.4)*.15:0;
     it.m.position.set(it.x,it.y+bob,it.z);
     it.m.visible=it.life>4||Math.sin(it.t*20)>0;
-    if(it.type==='star'||it.type==='onigiri'||it.type==='niku'||it.type==='jar') it.m.rotation.y+=dt*2.2;
+    if(it.type!=='hiyoko'&&it.type!=='orb') it.m.rotation.y+=dt*2.2;
+    if(it.m.userData.rainbow) it.m.userData.rainbow.emissive.setHSL((G.t*.8)%1,1,.5);
+    if(POWER.includes(it.type)&&Math.random()<dt*6) PART.emit(it.x+rand(-.4,.4),it.y+rand(-.2,.5),it.z+rand(-.4,.4),0,1,0,.5,.3,0xffffff);
     if(it.type==='orb'&&it.m.userData.ring){ it.m.userData.ring.rotation.x+=dt*3; it.m.userData.ring.rotation.y+=dt*2; }
     if(it.type==='hiyoko'){ it.m.rotation.y=Math.sin(it.t*.8)*1.2; if(Math.random()<dt*4) PART.emit(it.x+rand(-.6,.6),it.y+rand(.3,1.4),it.z+rand(-.6,.6),0,.8,0,.8,.35,0xfff27a); }
     if(it.type==='star'&&it.fixed&&Math.random()<dt*1.5) PART.emit(it.x+rand(-.3,.3),it.y+rand(-.3,.3),it.z+rand(-.3,.3),0,.6,0,.6,.25,0xfff27a);
@@ -1889,6 +2066,7 @@ function animHero(dt){
   P.walk+=dt*(5+sp*1.4);
   R.root.position.set(P.x,P.y,P.z);
   R.root.rotation.set(0,P.face,0);
+  P.rs=damp(P.rs,P.buff.big>0?1.6:1,6,dt); R.root.scale.setScalar(P.rs);
   const b=R.body; let lean=0, twist=0, armRx=-.35, armRz=0, armLx=0, legSw=Math.sin(P.walk)*.85*P.spdN, wx=Math.PI/2, bodyY=Math.abs(Math.sin(P.walk))*.08*P.spdN, roll=0;
   armLx=-legSw*.8; armRx=-.35+legSw*.4;
   if(!P.onG&&P.state==='move'){ legSw=0; armLx=-2.4; armRx=-2.2; bodyY=0; R.legL&&(R.legL.rotation.x=-.5); }
@@ -1934,27 +2112,139 @@ function animHero(dt){
 
 /* ------------------------------------------------------------ 敵の出現管理 */
 function updSpawns(dt){
-  const S=STAGES[stageIdx], D=DIFF[CFG.diff], eMax=S.eMax*(CFG.quality===1?.7:1); let alive=0; for(const e of EN) if(!e.dead) alive++;
+  const S=STAGES[stageIdx], D=DIFF[CFG.diff], eMax=S.eMax*(CFG.quality===1?.8:1.25)*(G.fever>0?1.3:1); let alive=0; for(const e of EN) if(!e.dead) alive++;
   for(const b of BASES){
     if(b.owner!=='E') continue;
     b.spawnT-=dt*D.aggro;
-    if(b.spawnT<=0){ b.spawnT=rand(1.8,3.6);
+    if(b.spawnT<=0){ b.spawnT=rand(1.1,2.4);
       let n=0; for(const e of EN) if(!e.dead&&e.base===b) n++;
       if(n<b.cap&&alive<eMax){ const a=rand(0,TAU), r=rand(2,b.r); spawnEnemy(Math.random()<.18+stageIdx*.05?'archer':'grunt',b.x+Math.cos(a)*r,b.z+Math.sin(a)*r,b); alive++;
         PART.burst(b.x+Math.cos(a)*r,.5,b.z+Math.sin(a)*r,5,{spd:3,col:0x9a90b0,life:.5,size:.6}); }
     }
   }
   /* 遊撃部隊 */
-  G.roamT-=dt;
-  if(G.roamT<=0){ G.roamT=rand(10,16)/D.aggro;
+  G.roamT-=dt*(G.fever>0?3:1);
+  if(G.roamT<=0){ G.roamT=rand(9,14)/D.aggro;
     if(alive<eMax-6){ const a=rand(0,TAU), r=rand(22,40), cx=P.x+Math.cos(a)*r, cz=P.z+Math.sin(a)*r, k=Math.hypot(cx,cz);
       const fx=k>ISL-6?cx*(ISL-6)/k:cx, fz=k>ISL-6?cz*(ISL-6)/k:cz;
-      for(let j=0;j<5;j++){ const e=spawnEnemy(j===0&&Math.random()<.5?'archer':'grunt',fx+rand(-2,2),fz+rand(-2,2),null); e.aggro=true; } } }
+      for(let j=0;j<7;j++){ const e=spawnEnemy(j===0&&Math.random()<.5?'archer':'grunt',fx+rand(-2,2),fz+rand(-2,2),null); e.aggro=true; } } }
   /* ボス戦中の援軍 */
   if(G.boss&&!G.boss.dead){ G.bossSpawnT=(G.bossSpawnT||4)-dt; if(G.bossSpawnT<=0){ G.bossSpawnT=5.5/D.aggro; if(alive<16+stageIdx*4){ for(let j=0;j<3;j++){ const a=rand(0,TAU); spawnEnemy('grunt',G.boss.x+Math.cos(a)*7,G.boss.z+Math.sin(a)*7,null).aggro=true; } } } }
 }
 
+/* ------------------------------------------------------------ ミッション */
+const MIS_NAME={bases:'拠点制圧',defend:'防衛戦',carts:'補給部隊追撃',gate:'城門突破',rush:'撃破チャレンジ',boss:'総大将討伐'};
+function misInit(){ MIS.i=-1; MIS.st=null; MIS.res=[]; STRUCTS=[]; G.evT=38; G.evList=['goblin','fever','ambush','giant'].sort(()=>Math.random()-.5); G.evI=0; G.fever=0; G.srings=[]; misNext(); }
+function misNext(){
+  const S=STAGES[stageIdx]; MIS.i++; const def=S.mission[MIS.i]; if(!def){ MIS.st=null; return; }
+  const st=MIS.st=Object.assign({t:0},def); const D=DIFF[CFG.diff];
+  switch(st.type){
+    case 'bases': st.n=st.n==='all'?BASES.length:st.n; break;
+    case 'defend': {
+      const T=st.tgt={x:st.x,z:st.z,r:1.6,hp:140,max:140,hitT:0}; const g=new THREE.Group(); g.position.set(st.x,groundAt(st.x,st.z,9),st.z); world.add(g); T.m=g;
+      for(const sx of[-1,1]){ const p2=new THREE.Mesh(CYL_LO,mat(0xcccccc,{metal:.5})); p2.scale.set(.08,2.8,.08); p2.position.set(sx*2.4,1.4,0); p2.castShadow=true; g.add(p2); }
+      const bar=new THREE.Mesh(CYL_LO,mat(0x3aa0ff,{metal:.4})); bar.scale.set(.06,5,.06); bar.rotation.z=Math.PI/2; bar.position.y=2.75; g.add(bar);
+      [0xffffff,0xff6fa8,0x6fc8ff,0xffe066].forEach((c,k)=>{ const sh=new THREE.Mesh(BOX,mat(c)); sh.scale.set(.95,1.3,.05); sh.position.set(-1.7+k*1.15,2.0,0); sh.castShadow=true; g.add(sh); ANIMS.push({o:sh,f:(o,t)=>{o.rotation.x=Math.sin(t*2+k)*.15;}}); });
+      addPlatB(st.x,st.z,.2,.2,2.8);
+      banner(`イベント：${st.name}を守れ！`,`${st.dur}秒間、ヨゴレ軍団から守り抜け`,'#ff9a3c'); AUD.alarm(); st.waveT=0; break; }
+    case 'carts': st.spawned=0; st.destroyed=0; st.escaped=0; st.nextT=1;
+      banner('イベント：補給部隊を追撃せよ！',`荷車${st.n}台が島の外へ逃げようとしている`,'#ffd23f'); AUD.alarm(); break;
+    case 'gate': {
+      const hp=st.hp*D.eHp; const G2=new THREE.Group(); G2.position.set(st.x,0,st.z); world.add(G2);
+      const wood=mat(0x6a4020,{rough:.85}), iron=mat(0x3a3a44,{metal:.7,rough:.35}), stone=mat(0x5a546e,{rough:.9});
+      for(const sx of[-1,1]){ const tw=new THREE.Mesh(CYL,stone); tw.scale.set(1.8,9,1.8); tw.position.set(sx*6.2,4.5,0); tw.castShadow=true; G2.add(tw); addPlatC(st.x+sx*6.2,st.z,1.8,9);
+        const cap=new THREE.Mesh(CONE,mat(0x8a1a3a)); cap.scale.set(2.2,2.4,2.2); cap.position.set(sx*6.2,10.2,0); G2.add(cap); }
+      const door=new THREE.Group(); G2.add(door);
+      const dm=new THREE.Mesh(BOX,wood); dm.scale.set(9,7,1.2); dm.position.y=3.5; dm.castShadow=true; door.add(dm);
+      for(const y of[1.2,3.5,5.8]){ const b=new THREE.Mesh(BOX,iron); b.scale.set(9.1,.3,1.3); b.position.y=y; door.add(b); }
+      const top=new THREE.Mesh(BOX,stone); top.scale.set(14,1.6,1.8); top.position.y=7.8; G2.add(top);
+      const pl={k:'b',x:st.x,z:st.z,hw:4.5,hd:.7,top:7,bot:-20}; PLATS.push(pl);
+      st.struct={x:st.x,z:st.z,hw:4.6,hd:.8,hp,max:hp,name:'城門',m:door,plat:pl,g:G2};
+      STRUCTS.push(st.struct);
+      for(let k=0;k<5;k++) spawnEnemy('archer',st.x+rand(-7,7),st.z+rand(2,5),null).aggro=true;
+      const cp=spawnEnemy('captain',st.x,st.z+4,null); cp.name='門番兵長'; makeLabel(cp,'門番兵長','#ffd23f');
+      banner('ミッション：城門を破壊せよ！','門を壊して城内へ攻め込め','#ff9a3c'); AUD.alarm(); st.waveT=3; break; }
+    case 'rush': st.ko0=G.ko; st.n=Math.round(st.n*(.8+.2*D.aggro)); st.waveT=0;
+      banner(`チャレンジ：${st.dur}秒で${st.n}人撃破！`,'成功するとごほうびアイテム','#5be08a'); AUD.alarm(); break;
+    case 'boss': G.bossT=2.5; break;
+  }
+  updateObjective();
+}
+function misFinish(ok,msg){
+  const st=MIS.st; if(!st) return;
+  MIS.res.push({name:MIS_NAME[st.type]+(st.name?`（${st.name}）`:''),ok,type:st.type});
+  if(st.type!=='bases'&&st.type!=='boss'){
+    if(ok){ banner(msg||'ミッション成功！','ごほうびアイテム獲得','#5be08a'); AUD.capture();
+      const rw=st.type==='rush'?['muteki','jar']:st.type==='gate'?['kinoko','niku']:st.type==='defend'?['niku','kinoko','jar']:['shoes','jar'];
+      rw.forEach((t,k)=>addItem(t,P.x+Math.cos(k*2)*2,P.y+1.5,P.z+Math.sin(k*2)*2)); }
+    else { banner(msg||'ミッション失敗…','次の目標へ進め','#ff9a9a'); AUD.lose(); }
+  }
+  if(st.tgt&&st.tgt.m){ world.remove(st.tgt.m); for(const e of EN) if(e.tgt===st.tgt) e.tgt=null; }
+  misNext();
+}
+function misUpdate(dt){
+  const st=MIS.st; if(!st||G.over) return; st.t+=dt;
+  const S=STAGES[stageIdx], D=DIFF[CFG.diff]; let alive=0; for(const e of EN) if(!e.dead) alive++;
+  switch(st.type){
+    case 'bases': if(BASES.filter(b=>b.owner==='A').length>=st.n) misFinish(true); break;
+    case 'defend': { const T=st.tgt; st.waveT-=dt;
+      if(T.hitT>0){ T.hitT-=dt; T.m.position.x=T.x+Math.sin(G.t*60)*.05; }
+      if(st.waveT<=0&&alive<S.eMax*1.5){ st.waveT=3.6/D.aggro; const a=rand(0,TAU);
+        for(let k=0;k<6;k++){ const b=a+rand(-.4,.4), r=rand(15,19); const e=spawnEnemy(k===5?'archer':'grunt',T.x+Math.cos(b)*r,T.z+Math.sin(b)*r,null); e.aggro=true; if(e.type==='grunt') e.tgt=T; } }
+      if(T.hp<=0) misFinish(false,`${st.name}がドロドロに…`);
+      else if(st.t>=st.dur) misFinish(true,`${st.name}を守り抜いた！`);
+      break; }
+    case 'carts': st.nextT-=dt;
+      if(st.spawned<st.n&&st.nextT<=0){ st.nextT=6; st.spawned++;
+        const a=rand(0,TAU), sx=Math.cos(a)*30, sz=Math.sin(a)*30, ex=-Math.cos(a)*(ISL-3), ez=-Math.sin(a)*(ISL-3);
+        const c=spawnEnemy('cart',sx,sz,null); c.exit=[ex,ez]; c.face=Math.atan2(ex-sx,ez-sz); c.name='補給部隊の荷車'; makeLabel(c,'補給部隊の荷車','#ffd23f');
+        for(let k=0;k<3;k++) spawnEnemy('grunt',sx+rand(-3,3),sz+rand(-3,3),null).aggro=true;
+        mvPop(`荷車 ${st.spawned}台目が出発！`,'#ffd23f'); }
+      if(st.destroyed+st.escaped>=st.n){ misFinish(st.destroyed>=Math.ceil(st.n/2),st.destroyed>=Math.ceil(st.n/2)?`荷車 ${st.destroyed}/${st.n} 台を破壊！`:`荷車を${st.escaped}台逃がした…`); }
+      break;
+    case 'gate': { st.waveT-=dt;
+      if(st.waveT<=0&&alive<S.eMax){ st.waveT=5/D.aggro; for(let k=0;k<4;k++) spawnEnemy('grunt',st.x+rand(-5,5),st.z-rand(2,6),null).aggro=true; }
+      if(st.struct.hp<=0) misFinish(true,'城門を打ち破った！'); break; }
+    case 'rush': { st.waveT-=dt; const got=G.ko-st.ko0;
+      if(st.waveT<=0&&alive<S.eMax*1.6){ st.waveT=2.4; const a=rand(0,TAU), r=rand(9,14);
+        for(let k=0;k<8;k++) spawnEnemy('grunt',P.x+Math.cos(a)*r+rand(-2,2),P.z+Math.sin(a)*r+rand(-2,2),null).aggro=true; }
+      if(got>=st.n) misFinish(true,`${st.n}人撃破 達成！`); else if(st.t>=st.dur) misFinish(false,`時間切れ…（${got}/${st.n}）`);
+      break; }
+  }
+}
+/* 城門などの構造物 */
+function structDist(st,x,z){ return Math.hypot(Math.max(0,Math.abs(x-st.x)-st.hw),Math.max(0,Math.abs(z-st.z)-st.hd)); }
+function hitStruct(st,dmg){
+  st.hp-=dmg; dmgNum(clamp(P.x,st.x-st.hw,st.x+st.hw),4,st.z,Math.round(dmg),dmg>30,'#ffb35a');
+  PART.burst(clamp(P.x,st.x-st.hw,st.x+st.hw),rand(1,5),st.z+Math.sign(P.z-st.z),6,{spd:5,col:[0x8a5a2b,0xd8c0a0],life:.5,size:.5,grav:10});
+  st.m.position.x=Math.sin(G.t*80)*.08;
+  if(st.hp<=0){ st.hp=0; st.g.remove(st.m); PLATS.splice(PLATS.indexOf(st.plat),1);
+    PART.burst(st.x,3,st.z,70,{spd:14,col:[0x8a5a2b,0x3a3a44,0xd8c0a0],life:1.2,size:.9,grav:14}); G.shake=1; flash(.35); AUD.blast(); }
+}
+/* ランダムイベント */
+function evUpdate(dt){
+  if(G.fever>0){ G.fever-=dt; if(G.fever<=0){ $('#hud').classList.remove('fever'); mvPop('フィーバー終了','#cccccc'); } }
+  if(!MIS.st||MIS.st.type!=='bases'||G.over) return;
+  G.evT-=dt; if(G.evT>0) return;
+  G.evT=rand(50,70); const ev=G.evList[G.evI++%G.evList.length];
+  if(ev==='goblin'){ const a=rand(0,TAU); const e=spawnEnemy('goblin',P.x+Math.cos(a)*12,P.z+Math.sin(a)*12,null); e.life=25; e.aggro=true; e.name='金ホコリン'; makeLabel(e,'金ホコリン','#ffd23f');
+    banner('イベント：金ホコリン出現！','逃げられる前に倒すとお宝！','#ffd23f'); AUD.alarm(); }
+  else if(ev==='fever'){ G.fever=20; $('#hud').classList.add('fever'); banner('フィーバータイム！','20秒間 敵が増えて無双ゲージ2倍・スターざくざく','#ff9ad5'); AUD.fanfare(); }
+  else if(ev==='ambush'){ const n=12; for(let k=0;k<n;k++){ const a=k/n*TAU; spawnEnemy(k%4===0?'archer':'grunt',P.x+Math.cos(a)*8,P.z+Math.sin(a)*8,null).aggro=true; }
+    const a=rand(0,TAU); const cp=spawnEnemy('captain',P.x+Math.cos(a)*10,P.z+Math.sin(a)*10,null); cp.aggro=true; cp.name='伏兵隊長'; makeLabel(cp,'伏兵隊長','#ffd23f');
+    banner('イベント：伏兵だ！','囲まれた！ 蹴散らせ！','#ff4d6d'); AUD.alarm(); }
+  else { const a=rand(0,TAU); spawnGiant(P.x+Math.cos(a)*14,P.z+Math.sin(a)*14,'巨大兵長ドッスン',1100).aggro=true;
+    banner('イベント：巨大兵長ドッスン出現！','倒すと巨大化キノコ','#ff9a3c'); AUD.alarm(); }
+}
+function spawnGiant(x,z,name,hp){
+  const e=spawnEnemy('captain',x,z,null); e.giant=true; e.sc=2.5; e.r=1.3; e.h=3.2; e.hp=e.maxHp=hp*DIFF[CFG.diff].eHp; e.name=name; makeLabel(e,name,'#ff9a3c');
+  world.remove(e.blob); e.blob=blob(1.3); world.add(e.blob); return e;
+}
+
 /* ------------------------------------------------------------ UI ヘルパ */
+function mvPop(t,col){ const el=$('#mvpop'); el.textContent=t; el.style.color=col||'#fff'; el.classList.remove('on'); void el.offsetWidth; el.classList.add('on'); }
+function koPop(t){ const el=$('#kopop'); el.textContent=t; el.classList.remove('on'); void el.offsetWidth; el.classList.add('on'); }
+function flash(a=.4,col='#fff'){ const f=$('#flash'); f.style.transition='none'; f.style.background=col; f.style.opacity=a; void f.offsetWidth; f.style.transition='opacity .4s'; f.style.opacity=0; }
 function banner(t,sub,col){
   const el=$('#banner'); el.innerHTML=''; const s=document.createElement('span'); s.textContent=t; s.style.color=col||'#fff'; el.appendChild(s);
   if(sub){ const sm=document.createElement('small'); sm.textContent=sub; el.appendChild(sm); }
@@ -2000,6 +2290,16 @@ function updHud(){
   setT($('#hStar'),'star','⭐ '+G.stars); setT($('#hHiyo'),'hiyo','🐤 '+G.hiyo+'/'+TOWERS.length);
   const el=$('#hElem');
   if(P.elem){ const E=ELEM[P.elem]; el.classList.add('on'); el.style.background=E.css; setT(el,'elem',E.icon+' '+E.name+' '+Math.ceil(P.elemT)+'s'); } else el.classList.remove('on');
+  const bf=[]; if(P.buff.big>0) bf.push('🍄 '+Math.ceil(P.buff.big)); if(P.buff.fast>0) bf.push('👟 '+Math.ceil(P.buff.fast)); if(P.buff.star>0) bf.push('🌟 '+Math.ceil(P.buff.star)); if(P.bombT>0) bf.push('💣');
+  const bs=bf.map(t=>`<span>${t}</span>`).join(''); if(lastHud.bf!==bs){ lastHud.bf=bs; $('#buffs').innerHTML=bs; }
+  /* コンボルート表示 */
+  const n=P.state==='atk'&&P.mv&&P.mv.kind==='N'?P.mv.idx+1:0, k=Math.min(n,5)+1;
+  const pips=Array.from({length:c.chain},(_,i)=>`<i class="${i<n?'on':''}"></i>`).join('');
+  if(lastHud.pips!==pips){ lastHud.pips=pips; $('#rPips').innerHTML=pips; }
+  setT($('#rNext'),'rn',`△ → C${k} ${CNAME(c)[k-1]}`);
+  setT($('.b-chg'),'bchg',`C${k}`);
+  if(G.boss&&!G.boss.dead) setW($('#bossBrk'),'brk',(G.boss.st==='broken'?100:Math.min(100,G.boss.brk/(G.boss.maxHp*.09)*100)).toFixed(1)+'%');
+  updateObjective();
   const cb=$('#combo'); cb.classList.toggle('on',G.combo>=5); setT($('#hCombo'),'combo',String(G.combo));
   if(G.boss&&!G.boss.dead) setW($('#bossHp'),'boss',(Math.max(0,G.boss.hp/G.boss.maxHp)*100).toFixed(1)+'%');
   /* 近くの敵拠点 */
@@ -2009,8 +2309,17 @@ function updHud(){
   else bb.classList.remove('on');
 }
 function updateObjective(){
-  const left=BASES.filter(b=>b.owner==='E').length;
-  $('#obj').textContent = G.bossPhase ? `🎯 本陣の ${STAGES[stageIdx].boss.name} を討て！` : `🎯 敵拠点を制圧せよ（残り ${left}）`;
+  const st=MIS.st, left=BASES.filter(b=>b.owner==='E').length, cap=BASES.length-left; let t;
+  const rem=st&&st.dur?`　残り${Math.max(0,Math.ceil(st.dur-st.t))}秒`:'';
+  if(!st||st.type==='boss') t=`🎯 本陣の ${STAGES[stageIdx].boss.name} を討て！`;
+  else switch(st.type){
+    case 'bases': t=`🎯 敵拠点を制圧せよ（${cap}/${st.n}）`; break;
+    case 'defend': t=`🛡 ${st.name}を守れ　耐久${Math.max(0,Math.ceil(st.tgt.hp/st.tgt.max*100))}%${rem}`; break;
+    case 'carts': t=`🛒 荷車を壊せ（破壊${st.destroyed}・逃走${st.escaped}／${st.n}）`; break;
+    case 'gate': t=`🏯 城門を破壊せよ　耐久${Math.ceil(st.struct.hp/st.struct.max*100)}%`; break;
+    case 'rush': t=`⚔ ${st.n}人撃破せよ（${G.ko-st.ko0}/${st.n}）${rem}`; break;
+  }
+  setT($('#obj'),'obj',t+(G.fever>0?`　🎉フィーバー ${Math.ceil(G.fever)}秒`:''));
 }
 /* ミニマップ */
 const mini=$('#mini'), mctx=mini.getContext('2d');
@@ -2026,6 +2335,11 @@ function drawMini(){
     if(e.type==='boss'){ mctx.fillStyle='#ff2d6f'; mctx.beginPath(); mctx.arc(x,y,10,0,TAU); mctx.fill(); mctx.fillStyle='#fff'; mctx.font='bold 14px sans-serif'; mctx.textAlign='center'; mctx.fillText('B',x,y+5); }
     else if(e.type==='captain'){ mctx.fillStyle='#ffd23f'; mctx.fillRect(x-6,y-6,12,12); }
     else { mctx.fillStyle='#ff6b6b'; mctx.fillRect(x-3,y-3,6,6); } }
+  const st=MIS.st; const mark=(x,z,col)=>{ const [mx,my]=tp(x,z); mctx.fillStyle=col; mctx.save(); mctx.translate(mx,my); mctx.rotate(Math.PI/4); mctx.fillRect(-8,-8,16,16); mctx.restore(); };
+  if(st&&st.type==='defend') mark(st.tgt.x,st.tgt.z,'#5be08a');
+  if(st&&st.type==='gate'&&st.struct.hp>0) mark(st.struct.x,st.struct.z,'#ff9a3c');
+  for(const e of EN){ if(e.dead) continue; if(e.type==='cart'||e.type==='goblin'){ const [x,y]=tp(e.x,e.z); mctx.fillStyle='#ffd23f'; mctx.strokeStyle='#000'; mctx.lineWidth=2; mctx.beginPath(); mctx.arc(x,y,8,0,TAU); mctx.fill(); mctx.stroke(); }
+    else if(e.giant){ const [x,y]=tp(e.x,e.z); mctx.fillStyle='#ff9a3c'; mctx.fillRect(x-8,y-8,16,16); } }
   for(const it of ITEMS){ if(it.type!=='orb') continue; const [x,y]=tp(it.x,it.z); mctx.fillStyle=ELEM[it.elem].css; mctx.beginPath(); mctx.arc(x,y,5,0,TAU); mctx.fill(); }
   mctx.restore();
   mctx.save(); mctx.translate(C,C); const a=angDiff(th+Math.PI,P.face); mctx.rotate(-a);
@@ -2076,27 +2390,31 @@ function startStage(i){
   setTimeout(()=>{
     Object.assign(G,{t:0,ko:0,combo:0,comboT:0,maxCombo:0,stars:0,starsTotal:0,hiyo:0,hitStop:0,shake:0,slow:1,slowT:0,over:false,victory:false,endT:0,boss:null,bossPhase:false,roamT:8,bossSpawnT:4,bossT:0});
     buildStage(i); spawnPlayer(); IN.drag.x=IN.drag.y=0; IN.zoom=0;
-    for(const b of BASES){ for(let k=0;k<6;k++){ const a=rand(0,TAU), r=rand(1,b.r); spawnEnemy(Math.random()<.2?'archer':'grunt',b.x+Math.cos(a)*r,b.z+Math.sin(a)*r,b); } }
+    for(const b of BASES){ for(let k=0;k<9;k++){ const a=rand(0,TAU), r=rand(1,b.r); spawnEnemy(Math.random()<.2?'archer':'grunt',b.x+Math.cos(a)*r,b.z+Math.sin(a)*r,b); } }
     for(let k=0;k<3;k++){ const a=rand(-.8,.8)+Math.PI, r=rand(20,30); for(let j=0;j<4;j++) spawnEnemy('grunt',Math.sin(a)*r+rand(-2,2),Math.cos(a)*r+rand(-2,2)-5,null); }
-    $('#hFace').textContent=G.char.emoji; $('#hName').textContent=G.char.name; $('#bossbar').classList.remove('on'); lastHud={};
-    updateObjective(); applyQuality();
+    $('#hFace').textContent=G.char.emoji; $('#hName').textContent=G.char.name; $('#bossbar').classList.remove('on'); $('#hud').classList.remove('fever'); lastHud={};
+    misInit(); applyQuality();
     setMode('play'); show(null); AUD.play(STAGES[i].bgm);
-    banner(STAGES[i].name,'敵拠点をすべて制圧し、総大将を討て！','#ffffff');
+    banner(STAGES[i].name,STAGES[i].mission.map(m=>MIS_NAME[m.type]).filter((v,k,a)=>a.indexOf(v)===k).join(' → '),'#ffffff');
   },60);
 }
 function pauseGame(){ if(G.mode!=='play') return; setMode('pause'); show('pause');
-  $('#pauseInfo').textContent=`${STAGES[stageIdx].name} ／ ${G.char.name} ／ ${DIFF[CFG.diff].name}`; }
+  $('#pauseInfo').textContent=`${STAGES[stageIdx].name} ／ ${G.char.name} ／ ${DIFF[CFG.diff].name}`;
+  const c=G.char, nm=CNAME(c), ds=['敵を空中に打ち上げる。空中で追撃できる','前方へ突進しながら連打','その場で回転して周りをなぎ払う',`必殺技「${c.special}」`,'地面を叩いて広範囲を吹き飛ばす','大地割り＋追撃の衝撃波'];
+  $('#pauseMoves').innerHTML=`<div style="font-weight:900;margin-bottom:4px">${c.name} の技表（□=攻撃 △=チャージ）</div>`+nm.slice(0,Math.min(6,c.chain+1)).map((n,i)=>`<div><b>${'□'.repeat(i)}△ C${i+1} ${n}</b> … ${ds[i]}</div>`).join('')+
+    `<div><b>回避中に□</b> … ダッシュ攻撃</div><div><b>空中で□</b> … 空中コンボ　<b>空中で△</b> … 急降下</div><div><b>無双ゲージMAXで無双</b> … ${c.musou}</div>`; }
 function resume(){ setMode('play'); show(null); IN.k={}; }
 function endStage(){
   const S=STAGES[stageIdx], win=G.victory;
   const hpR=P.hp/P.maxHp, tb=win?Math.max(0,Math.round((S.limit*.6-G.t)*3)):0;
-  const score=G.ko*10+G.maxCombo*4+G.hiyo*400+G.stars*40+(win?Math.round(hpR*800)+2000:0)+tb;
+  const misOk=MIS.res.filter(r=>r.ok&&r.type!=='bases').length;
+  const score=G.ko*10+G.maxCombo*4+G.hiyo*400+G.stars*40+misOk*700+(win?Math.round(hpR*800)+2000:0)+tb;
   const th=[5200,4000,2800].map(v=>v*(1+stageIdx*.3));
   const rank=!win?'—':score>=th[0]?'S':score>=th[1]?'A':score>=th[2]?'B':'C';
   $('#rTitle').textContent=win?'🎉 ステージ制圧！':'💦 敗走…';
   $('#rSub').textContent=`${S.sub} ${S.name} ／ ${G.char.name} ／ ${DIFF[CFG.diff].name}`;
   $('#rRank').textContent=rank;
-  const rows=[['撃破数',G.ko+' 人'],['最大コンボ',G.maxCombo+' HIT'],['制圧拠点',BASES.filter(b=>b.owner==='A').length+' / '+BASES.length],['ひよこ救出',G.hiyo+' / '+TOWERS.length],['スター',G.stars+' / '+G.starsTotal],['タイム',fmtT(G.t)],['スコア',score.toLocaleString()]];
+  const rows=[['撃破数',G.ko+' 人'],['最大コンボ',G.maxCombo+' HIT'],['制圧拠点',BASES.filter(b=>b.owner==='A').length+' / '+BASES.length],['ひよこ救出',G.hiyo+' / '+TOWERS.length],...MIS.res.filter(r=>r.type!=='bases').map(r=>[r.name,r.ok?'○ 成功':'× 失敗']),['スター',G.stars+' / '+G.starsTotal],['タイム',fmtT(G.t)],['スコア',score.toLocaleString()]];
   const tb2=$('#rTable'); tb2.innerHTML=''; rows.forEach(([a,b])=>{ const tr=document.createElement('tr'); const t1=document.createElement('td'); t1.textContent=a; const t2=document.createElement('td'); t2.textContent=b; tr.append(t1,t2); tb2.appendChild(tr); });
   let nr='';
   if(win){ const best=SAVE.get('best'+stageIdx,null); if(!best||score>best.score){ SAVE.set('best'+stageIdx,{rank,score}); nr='NEW RECORD!'; } }
@@ -2156,9 +2474,11 @@ function update(dt,rdt){
   if(G.comboT>0){ G.comboT-=dt; if(G.comboT<=0) G.combo=0; }
   updPlayer(dt);
   updEnemies(dt);
+  updFly(dt);
+  updRings(dt);
   updProj(dt);
   updItems(dt);
-  if(!G.over) updSpawns(dt);
+  if(!G.over){ updSpawns(dt); misUpdate(dt); evUpdate(dt); }
   if(G.bossT>0){ G.bossT-=dt; if(G.bossT<=0) spawnBoss(); }
   for(const b of BASES){ b.flag.rotation.y=Math.sin(G.t*3+b.x)*.25; b.ringM.opacity=b.owner==='E'?.4+.25*Math.sin(G.t*4):.55; }
   if(!G.over&&G.t>=STAGES[stageIdx].limit){ banner('時間切れ…','','#ff6b6b'); P.hp=0; playerDown(); }
@@ -2194,7 +2514,7 @@ setMode('title');
 requestAnimationFrame(t=>{ last=t; requestAnimationFrame(frame); });
 setTimeout(()=>{ show('title'); AUD.play('title'); },150);
 let frames=0; setInterval(()=>{ window.__fps=frames; frames=0; },1000);
-window.__MUSOU={G,P,CFG,CHARS,CAM,camera,startStage,spawnBoss,captureBase,sim(sec,keys){ const n=Math.round(sec*60); for(let i=0;i<n;i++){ if(keys) IN.k=keys(i)||{}; pollInput(); if(G.mode!=='play') break; update(1/60,1/60); } IN.k={}; },get EN(){return EN;},get PLATS(){return PLATS;},groundAt,get BASES(){return BASES;},get ITEMS(){return ITEMS;},get TOWERS(){return TOWERS;},get stage(){return stageIdx;}};
+window.__MUSOU={G,P,CFG,CHARS,CAM,camera,MIS,misFinish,addItem,startStage,spawnBoss,captureBase,sim(sec,keys){ const n=Math.round(sec*60); for(let i=0;i<n;i++){ if(keys) IN.k=keys(i)||{}; pollInput(); if(G.mode!=='play') break; update(1/60,1/60); } IN.k={}; },get EN(){return EN;},get PLATS(){return PLATS;},groundAt,get BASES(){return BASES;},get ITEMS(){return ITEMS;},get TOWERS(){return TOWERS;},get stage(){return stageIdx;}};
 </script>
 </body>
 </html>
