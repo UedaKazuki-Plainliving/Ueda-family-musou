@@ -1,5 +1,5 @@
 /* 上田家無双 スモークテスト
- *  - 全3ステージ × 全6キャラを起動し、ページエラーが出ないこと
+ *  - 全3ステージ × 全キャラを起動し、ページエラーが出ないこと
  *  - 戦闘 → 拠点制圧 → ボス出現 → 撃破 → リザルト表示まで進むこと
  *  - 各探索タワーの頂上（ひよこ）までジャンプで登れること
  * 実行: npm i playwright && npx playwright install chromium && node test/smoke.mjs
@@ -29,7 +29,8 @@ let fail = 0;
 const check = (ok, msg) => { console.log((ok ? '  ✔ ' : '  ✘ ') + msg); if (!ok) fail++; };
 
 for (let st = 0; st < 3; st++) {
-  for (let ch = 0; ch < 6; ch++) {
+  const NCH = await page.evaluate(() => window.__MUSOU.CHARS.length);
+  for (let ch = 0; ch < NCH; ch++) {
     await page.evaluate(([st, ch]) => { const M = window.__MUSOU; M.G.char = M.CHARS[ch]; M.startStage(st); }, [st, ch]);
     await page.waitForFunction(() => window.__MUSOU.G.mode === 'play', null, { timeout: 20000 });
     const r = await page.evaluate(() => {
