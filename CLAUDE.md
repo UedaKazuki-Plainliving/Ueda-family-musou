@@ -4,4 +4,4 @@
 - `three-bundle.js` は「大乱闘上田家ファミリー」と共通。ライブラリ更新以外で書き換えない。
 - デバッグ・テスト用に `window.__MUSOU` を公開している（`sim(秒, keysFn)` でゲームを固定ステップで進められる）。テストが依存しているので削除しない。
 - 変更したら `npm test`（test/smoke.mjs）が ALL PASS になることを確認する。
-- qa-watch リポジトリの `musou.html` はこのファイルのコピー。更新時は同じ内容を qa-watch にもコピーする。
+- 公開は GitHub Pages（`.github/workflows/pages.yml`）。main に push すると https://uedakazuki-plainliving.github.io/Ueda-family-musou/ に自動反映される。

@@ -2,6 +2,8 @@
 
 「大乱闘上田家ファミリー」に続く、上田家ファミリーシリーズ第2弾。
 three.js（同梱の `three-bundle.js`）で動く **3D一騎当千アクション × 箱庭探索** ゲームです。
+**遊ぶ → https://uedakazuki-plainliving.github.io/Ueda-family-musou/**
+
 ブラウザで `musou.html` を開くだけで遊べます（外部CDN・外部通信なし、PC / スマホ / ゲームパッド対応）。
 
 - **三國無双っぽさ** … 数十体の雑兵をまとめてなぎ払う通常攻撃6段＋チャージ攻撃 C1〜C6、無双乱舞、拠点制圧 → 兵長 → 総大将
@@ -50,6 +52,7 @@ three.js（同梱の `three-bundle.js`）で動く **3D一騎当千アクショ�
 ## ファイル構成
 
 ```
+index.html        musou.html へのリダイレクト（Pages のトップ）
 musou.html        ゲーム本体（HTML/CSS/JS 1ファイル）
 three-bundle.js   three.js r160 + addons 同梱（MIT License、大乱闘上田家ファミリーと共通）
 test/smoke.mjs    Playwright スモークテスト（全ステージ×全キャラ起動・制圧→ボス撃破・タワー登頂）
@@ -66,4 +69,4 @@ npm test
 ## 関連
 
 - 大乱闘上田家ファミリー（2D/3D対戦）: UedaKazuki-Plainliving/Ueda-family-battle
-- qa-watch リポジトリにはコピー（`musou.html`）を置いて同じ S3 プレフィックスへデプロイしています。修正はこのリポジトリで行ってください。
+- 公開は GitHub Pages（`.github/workflows/pages.yml`、main への push で自動デプロイ）。
